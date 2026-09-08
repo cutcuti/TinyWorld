@@ -1,4 +1,4 @@
-import { SHED, createRest, type RestState } from "./rest";
+import { createRest, type RestState } from "./rest";
 import { inWater, type Plant } from "./simulation";
 export type Species =
   "chicken" | "cow" | "goat" | "sheep" | "horse" | "dog" | "duck";
@@ -64,7 +64,6 @@ export function walkable(
   return (
     Math.hypot(x, z) < 5.45 &&
     !inWater(x, z) &&
-    Math.hypot(x - SHED.x, z - SHED.z) > 0.75 &&
     !plants.some((p) => Math.hypot(p.x - x, p.z - z) < 0.85) &&
     !others.some((a) => a.id !== id && Math.hypot(a.x - x, a.z - z) < 0.72)
   );

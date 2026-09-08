@@ -58,7 +58,7 @@ test("cow milk, chicken eggs, fruit picking and dog reactions use actual scene c
   await tap(page, -4.2, 0.65, 2.425);
   await expect(page.locator(".toast")).toContainText("Zoomies");
 });
-test("seasons wrap in sequence, sound is opt-in, and shed visitors come out at night", async ({
+test("seasons wrap in sequence, sound is opt-in, and all animals have cloud beds at night", async ({
   page,
 }) => {
   await ready(page);
@@ -74,9 +74,8 @@ test("seasons wrap in sequence, sound is opt-in, and shed visitors come out at n
     await expect(page.locator("main")).toHaveAttribute("data-season", s);
   }
   await page.getByRole("slider", { name: "Time of day" }).fill("22");
-  await expect(page.getByText("Tiny shed · tap to knock")).toBeVisible();
-  await tap(page, 3.9, 0.8, 2.2);
-  await expect(page.locator(".toast")).toContainText("sleepy");
+  await expect(page.getByText("z z z", { exact: true })).toHaveCount(14);
+  await expect(page.getByText("Tiny shed · tap to knock")).toHaveCount(0);
   await page.screenshot({ path: "test-results/bedtime.png" });
 });
 test("free world starts empty, adds residents and lotus, and preserves the original garden", async ({

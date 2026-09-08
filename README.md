@@ -43,15 +43,15 @@ The season button advances only in order: **Spring → Summer → Autumn → Win
 
 The time slider controls daylight. Pause holds the clock while plants and creature behavior continue. A full day lasts roughly six minutes.
 
-## Ridiculously tiny bedrooms
+## Cloud bedrooms
 
-At 19:00 animals stretch, then hop to bed. Farm animals and dogs squeeze into a comically small shed; sheep, the horse, and ducks take cloud beds. Click the shed at night to invite a random sleepy resident out for a short visit before it returns.
+At 19:00 all animals stretch, then hop onto cloud beds. Every species sleeps on a cloud; there is no shed.
 
 Chickens start waking at 05:42; the rest follow at 06:18. Moving the clock back to daytime wakes the animals too. **Less motion** skips stretches and hops, stops wandering and particle travel, and moves animals directly between resting states.
 
 ## Free world
 
-**Free world** opens a separate, initially bare island with no plants or animals. Plant your own garden, then use **Animals** to choose and place neighbors. Ducks need the pond; other animals need grass. A tiny shed appears when you invite residents.
+**Free world** opens a separate, initially bare island with no plants or animals. Plant your own garden, then use **Animals** to choose and place neighbors. Ducks need the pond; other animals need grass.
 
 **Return to garden** switches back to the original garden. Each mode keeps its own save. **Start fresh** asks for confirmation and resets only the current mode. Free worlds allow up to 20 animals; both modes allow up to 85 plants.
 
@@ -69,7 +69,7 @@ Plants, harvests, cooldowns, seasons, settings, and free-world resident placemen
 - `src/Scene.tsx`: island, trees, camera and picking.
 - `src/Animals.tsx`: animal models, interaction and sleeping visuals.
 - `src/wildlife.ts`: bounded roaming, obstacle avoidance and chasing.
-- `src/rest.ts`: stretching, shed visits, cloud beds and staggered waking.
+- `src/rest.ts`: stretching, cloud beds and staggered waking.
 - `src/simulation.ts`: growth, seasons, harvesting and placement rules.
 - `src/persistence.ts`: validation and migration of saved worlds.
 - `src/GardenDetails.tsx`: lilies, lotus, seasonal particles and rainbows.
@@ -79,6 +79,6 @@ Plants, harvests, cooldowns, seasons, settings, and free-world resident placemen
 
 Vercel deploys the GitHub `main` branch using the included Vite configuration. Build command: `npm run build`; output: `dist`. No environment variables are needed. Build output, local settings, browser-test artifacts and secrets are excluded from Git.
 
-Tests cover growth, collections and cooldowns, seasons, save migration, free-world placement, animal boundaries, chasing and horse immunity, bedtime and shed visits, browser clicks, audio opt-in, keyboard controls, camera gestures, reset, screenshot export, and mobile control placement and active-button contrast. Testing uses desktop Chrome and mobile emulation; physical devices and Safari remain unverified.
+Tests cover growth, collections and cooldowns, seasons, save migration, free-world placement, animal boundaries, chasing and horse immunity, bedtime and cloud beds, browser clicks, audio opt-in, keyboard controls, camera gestures, reset, screenshot export, and mobile control placement and active-button contrast. Testing uses desktop Chrome and mobile emulation; physical devices and Safari remain unverified.
 
 The Three.js runtime makes the initial bundle larger than a typical static page. Creature behavior is intentionally simple. There is no feeding, breeding, multiplayer, terrain sculpting or cross-device save.

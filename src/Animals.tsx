@@ -1,11 +1,4 @@
-import {
-  SHED,
-  bedPosition,
-  cloudSleeper,
-  stepRest,
-  visitFromShed,
-  createRest,
-} from "./rest";
+import { bedPosition, stepRest, createRest } from "./rest";
 import { animalSound } from "./audio";
 import { useEffect, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
@@ -129,27 +122,19 @@ function Creature({
         animal.scared || animal.chaseLeft > 0 || clicked.current > 0;
     clicked.current = Math.max(0, clicked.current - dt);
     const sleeping = animal.rest.stage === "sleep";
-    root.current.visible = !(sleeping && !cloudSleeper(animal));
-    const shrinking =
-      !cloudSleeper(animal) && ["travel", "return"].includes(animal.rest.stage)
-        ? Math.max(
-            0.13,
-            Math.min(1, Math.hypot(animal.x - SHED.x, animal.z - SHED.z)),
-          )
-        : 1;
     const stretch =
       animal.rest.stage === "stretch"
         ? Math.sin((animal.rest.timer / 1.6) * Math.PI)
         : 0;
     root.current.scale.set(
-      size * (1 + stretch * 0.18) * shrinking,
-      size * (1 - stretch * 0.23) * shrinking,
-      size * (1 + stretch * 0.15) * shrinking,
+      size * (1 + stretch * 0.18),
+      size * (1 - stretch * 0.23),
+      size * (1 + stretch * 0.15),
     );
     root.current.position.set(
       animal.x,
       resting
-        ? animal.rest.y - (sleeping && cloudSleeper(animal) && !duck ? 0.28 : 0)
+        ? animal.rest.y - (sleeping && !duck ? 0.28 : 0)
         : duck
           ? 0.24
           : 0.27,
@@ -470,13 +455,11 @@ export default function Animals({
   reduced,
   tool,
   onAnimal,
-  onShed,
   time,
   seeds,
 }: {
   time: number;
   seeds: { id: number; species: Species; x: number; z: number }[] | null;
-  onShed: (species: Species) => void;
   plants: Plant[];
   night: boolean;
   reduced: boolean;
@@ -524,63 +507,8 @@ export default function Animals({
   }, [night]);
   return (
     <group>
-      {animals.current.length > 0 && (
-        <group
-          position={[SHED.x, 0.27, SHED.z]}
-          onClick={(e) => {
-            if (tool !== "explore" || e.delta > 6) return;
-            e.stopPropagation();
-            const asleep = animals.current.filter(
-              (a) => a.rest.stage === "sleep" && !cloudSleeper(a),
-            );
-            if (asleep.length) {
-              const a = asleep[Math.floor(Math.random() * asleep.length)];
-              visitFromShed(a);
-              onShed(a.species);
-            }
-          }}
-        >
-          <mesh position={[0, 0.34, 0]} castShadow>
-            <boxGeometry args={[0.75, 0.68, 0.65]} />
-            <meshStandardMaterial color="#b07659" />
-          </mesh>
-          <mesh
-            position={[0, 0.86, 0]}
-            rotation={[0, Math.PI / 4, 0]}
-            castShadow
-          >
-            <coneGeometry args={[0.7, 0.45, 4]} />
-            <meshStandardMaterial color="#667d78" />
-          </mesh>
-          <mesh position={[0, 0.25, 0.331]}>
-            <boxGeometry args={[0.3, 0.5, 0.02]} />
-            <meshStandardMaterial
-              color="#443d38"
-              emissive="#efbd74"
-              emissiveIntensity={night ? 0.9 : 0}
-            />
-          </mesh>
-          <mesh position={[0.24, 0.44, 0.338]}>
-            <boxGeometry args={[0.12, 0.13, 0.02]} />
-            <meshStandardMaterial
-              color="#f3d797"
-              emissive="#f3d797"
-              emissiveIntensity={night ? 1.4 : 0}
-            />
-          </mesh>
-          {night && (
-            <Html
-              center
-              position={[0, 1.2, 0]}
-              style={{ pointerEvents: "none" }}
-            >
-              <span className="sleep-label">Tiny shed · tap to knock</span>
-            </Html>
-          )}
-        </group>
-      )}
       {(night || time < 6.5) &&
-        animals.current.filter(cloudSleeper).map((a) => {
+        animals.current.map((a) => {
           const p = bedPosition(a);
           return (
             <group

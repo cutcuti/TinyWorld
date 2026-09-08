@@ -35,7 +35,6 @@ type Props = {
   world: World;
   onAnimal: (id: number, species: Species) => void;
   onHarvest: (id: string) => void;
-  onShed: (species: Species) => void;
   rainbow: boolean;
   tool: Tool;
   species: Plant["kind"];
@@ -287,7 +286,6 @@ function Content(props: Props) {
     view,
     onAnimal,
     onHarvest,
-    onShed,
     rainbow,
   } = props;
   const { camera, size } = useThree();
@@ -489,7 +487,6 @@ function Content(props: Props) {
           reduced={world.reduced}
           tool={tool}
           onAnimal={onAnimal}
-          onShed={onShed}
           time={world.time}
           seeds={world.animalSeeds}
           key={world.mode}

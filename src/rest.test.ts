@@ -1,8 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createAnimals } from "./wildlife";
-import { stepRest, cloudSleeper, visitFromShed, bedPosition } from "./rest";
-test("bedtime stretches, hops to tiny shed or cloud, and chickens wake first", () => {
+import { stepRest, bedPosition } from "./rest";
+test("bedtime stretches, sends every species to a cloud, and chickens wake first", () => {
   const all = createAnimals();
   for (const a of all) stepRest(a, 0.1, 22, false);
   assert.ok(all.every((a) => a.rest.stage === "stretch"));
@@ -12,7 +12,7 @@ test("bedtime stretches, hops to tiny shed or cloud, and chickens wake first", (
     const bed = bedPosition(a);
     assert.ok(Math.abs(a.x - bed.x) < 1e-10);
     assert.ok(Math.abs(a.z - bed.z) < 1e-10);
-    assert.ok(cloudSleeper(a) ? a.rest.y > 3 : a.rest.y < 1);
+    assert.ok(a.rest.y > 3);
   }
   for (let i = 0; i < 40; i++)
     for (const a of all) stepRest(a, 0.1, 5.8, false);
@@ -29,16 +29,12 @@ test("bedtime stretches, hops to tiny shed or cloud, and chickens wake first", (
   for (let i = 0; i < 40; i++) for (const a of all) stepRest(a, 0.1, 7, false);
   assert.ok(all.every((a) => a.rest.stage === "awake"));
 });
-test("a shed visitor comes out and goes back; reduced motion skips the hops", () => {
-  const a = createAnimals().find((a) => a.species === "cow")!;
-  stepRest(a, 0.1, 22, true);
-  assert.equal(a.rest.stage, "sleep");
-  visitFromShed(a);
-  for (let i = 0; i < 30; i++) stepRest(a, 0.1, 22, false);
-  assert.equal(a.rest.stage, "visit");
-  assert.ok(a.z > 2.8);
-  for (let i = 0; i < 60; i++) stepRest(a, 0.1, 22, false);
-  assert.equal(a.rest.stage, "sleep");
-  stepRest(a, 0.1, 9, true);
-  assert.equal(a.rest.stage, "awake");
+test("reduced motion puts every animal directly on its cloud", () => {
+  for (const a of createAnimals()) {
+    stepRest(a, 0.1, 22, true);
+    assert.equal(a.rest.stage, "sleep");
+    assert.ok(a.rest.y > 3);
+    stepRest(a, 0.1, 9, true);
+    assert.equal(a.rest.stage, "awake");
+  }
 });

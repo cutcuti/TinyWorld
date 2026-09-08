@@ -200,10 +200,6 @@ export default function App() {
         : "Welcome back to your garden.",
     );
   }
-  function onShed(species: Species) {
-    animalSound(species);
-    setNotice(`A sleepy ${species} says hello… then heads back to bed.`);
-  }
   function act(x: number, z: number) {
     if (tool === "animal") {
       const result = inviteAnimal(current.current, animalSpecies, x, z);
@@ -213,14 +209,6 @@ export default function App() {
       return;
     }
     if (tool === "plant") {
-      if (
-        (current.current.animalSeeds === null ||
-          current.current.animalSeeds.length > 0) &&
-        Math.hypot(x - 3.9, z - 2.2) < 0.9
-      ) {
-        setNotice("Leave a little room for the tiny shed.");
-        return;
-      }
       const w = current.current;
       if (!canPlant(w.plants, x, z, species)) {
         setNotice(
@@ -290,7 +278,6 @@ export default function App() {
             world={world}
             onAnimal={onAnimal}
             onHarvest={onHarvest}
-            onShed={onShed}
             rainbow={rainbow}
             tool={tool}
             species={species}
