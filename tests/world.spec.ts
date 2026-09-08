@@ -7,7 +7,7 @@ async function ground(page: Page, x: number, z: number) {
   const camera = new PerspectiveCamera(
     (2 *
       Math.atan(
-        Math.tan((39 * Math.PI) / 360) / Math.min(box.width / box.height, 1),
+        Math.tan((45 * Math.PI) / 360) / Math.min(box.width / box.height, 1),
       ) *
       180) /
       Math.PI,

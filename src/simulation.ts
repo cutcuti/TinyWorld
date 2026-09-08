@@ -15,7 +15,9 @@ export type World = {
   paused: boolean;
   reduced: boolean;
 };
-export const LIMIT = 65;
+export const ISLAND_RADIUS = 6;
+export const PLANT_RADIUS = 5.6;
+export const LIMIT = 85;
 export const RADIUS = 1.35;
 export const inWater = (x: number, z: number) =>
   ((x - 1.55) / 1.55) ** 2 + ((z - 0.65) / 1.05) ** 2 < 1.18;
@@ -23,7 +25,7 @@ export function canPlant(plants: Plant[], x: number, z: number) {
   return (
     Number.isFinite(x) &&
     Number.isFinite(z) &&
-    x * x + z * z < 19 &&
+    x * x + z * z < PLANT_RADIUS ** 2 &&
     !inWater(x, z) &&
     !plants.some((p) => Math.hypot(p.x - x, p.z - z) < 0.7) &&
     plants.length < LIMIT

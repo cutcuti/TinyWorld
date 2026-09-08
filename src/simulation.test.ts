@@ -5,7 +5,7 @@ import { advance, canPlant, initialWorld, waterAt, LIMIT } from "./simulation";
 test("rejects water, edges, occupied ground, invalid points and capacity overflow", () => {
   const w = initialWorld();
   assert.equal(canPlant(w.plants, 1.55, 0.65), false);
-  assert.equal(canPlant([], 4.5, 0), false);
+  assert.equal(canPlant([], 5.7, 0), false);
   assert.equal(canPlant(w.plants, -2.5, -1.6), false);
   assert.equal(canPlant([], NaN, 0), false);
   assert.equal(canPlant(w.plants, -2.5, 2.7), true);
@@ -54,4 +54,9 @@ test("restores a valid save and recovers from malformed or out-of-bounds saves",
   assert.equal(loadWorld().plants.length, 8);
   raw = JSON.stringify({ ...w, plants: [{ ...w.plants[0], water: -20 }] });
   assert.equal(loadWorld().plants.length, 8);
+});
+
+test("expanded island accepts new ground and keeps old saves valid", () => {
+  assert.equal(canPlant([], 5.2, 0), true);
+  assert.equal(canPlant([], 5.8, 0), false);
 });

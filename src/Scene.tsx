@@ -1,3 +1,4 @@
+import Animals from "./Animals";
 import { useEffect, useMemo, useRef } from "react";
 import {
   Canvas,
@@ -224,7 +225,7 @@ function Content(props: Props) {
       camera.fov = THREE.MathUtils.radToDeg(
         2 *
           Math.atan(
-            Math.tan(THREE.MathUtils.degToRad(39 / 2)) /
+            Math.tan(THREE.MathUtils.degToRad(45 / 2)) /
               Math.min(size.width / size.height, 1),
           ),
       );
@@ -306,15 +307,15 @@ function Content(props: Props) {
       />
       <group>
         <mesh position={[0, -0.65, 0]} rotation={[0, 0.13, 0]} castShadow>
-          <cylinderGeometry args={[4.82, 3.9, 1.7, 11, 2]} />
+          <cylinderGeometry args={[6.02, 4.9, 1.7, 11, 2]} />
           <meshStandardMaterial color="#aa8c73" flatShading />
         </mesh>
         <mesh position={[0, -2.4, 0]} rotation={[0, 0.13, 0]}>
-          <cylinderGeometry args={[3.9, 1.2, 1.8, 11]} />
+          <cylinderGeometry args={[4.9, 1.5, 1.8, 11]} />
           <meshStandardMaterial color="#887967" flatShading />
         </mesh>
         <mesh position={[0, 0.03, 0]} receiveShadow castShadow>
-          <cylinderGeometry args={[4.8, 4.87, 0.45, 64]} />
+          <cylinderGeometry args={[6, 6.07, 0.45, 64]} />
           <meshStandardMaterial color="#92ad7a" roughness={1} />
         </mesh>
         <mesh
@@ -356,7 +357,7 @@ function Content(props: Props) {
             pointers.current.clear();
           }}
         >
-          <circleGeometry args={[4.8, 64]} />
+          <circleGeometry args={[6, 64]} />
           <meshBasicMaterial transparent opacity={0} depthWrite={false} />
         </mesh>
         <mesh
@@ -402,12 +403,18 @@ function Content(props: Props) {
           return (
             <Pebble
               key={i}
-              position={[Math.sin(a) * 4.52, 0.2, Math.cos(a) * 4.52]}
+              position={[Math.sin(a) * 5.78, 0.2, Math.cos(a) * 5.78]}
               scale={0.12 + (i % 4) * 0.08}
               color={i % 2 ? "#a5b08e" : "#839681"}
             />
           );
         })}
+        <Animals
+          plants={world.plants}
+          night={night}
+          reduced={world.reduced}
+          tool={tool}
+        />
         {world.plants.map((p) =>
           p.kind === "tree" ? (
             <Tree key={p.id} p={p} reduced={world.reduced} />

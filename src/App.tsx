@@ -237,7 +237,8 @@ export default function App() {
       </div>
       <div className="island-label">
         <span className="dot" /> THE FLOATING GARDEN{" "}
-        <span className="label-line" /> {world.plants.length} PLANTS
+        <span className="label-line" /> {world.plants.length} PLANTS · 10
+        ANIMALS
       </div>
       {hint && (
         <div className="hint">

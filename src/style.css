@@ -649,3 +649,5 @@ footer > span {
     pointer-events: none;
   }
 }
+
+.animal-label { display: block; white-space: nowrap; padding: 7px 12px; border-radius: 16px; background: #f6f7ebed; color: #344c46; font-size: 12px; box-shadow: 0 3px 15px #243d4b18; }

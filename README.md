@@ -38,14 +38,22 @@ Buttons, toggles, and the time slider support keyboard navigation with Tab, Ente
 
 ## Simulation and saving
 
-Plants grow from seedlings to maturity in about 83 seconds. Rain affects plants within 1.35 world units, accelerating growth for eight seconds. Mature flowers attract up to six butterflies by day. Night brings seven glowing mushrooms and 28 fireflies. The world is capped at 65 plants, and rain uses one bounded, instanced particle system. Pixel density is capped at 1.6.
+Plants grow from seedlings to maturity in about 83 seconds. Rain affects plants within 1.35 world units, accelerating growth for eight seconds. Mature flowers attract up to six butterflies by day. Night brings seven glowing mushrooms and 28 fireflies. The world is capped at 85 plants, and rain uses one bounded, instanced particle system. Pixel density is capped at 1.6.
 
 The clock takes about six minutes for a full cycle. Time steps are independent of frame rate and capped after a background-tab delay. There is no offline growth. The island has a flat, plantable plateau; its rocky sides and edge are not plantable.
 
 Plants, time, pause, and motion settings save to browser local storage every 1.5 seconds and when the page is left. Saves are validated before use; malformed data restores the original garden. Saves stay on the same browser and origin. Clearing browser storage removes them; private browsing or blocked storage may prevent saving, and the interface shows that state.
 
+## Animal neighbors
+
+The island is 25% wider than the original, with about 56% more surface area. Ten procedural animals live in the garden: three chickens, two cows, two goats, two sheep, and one horse. They wander, pause to graze, avoid the pond, trees, one another and the island edge, and rest at night. Hover an animal in Explore mode to see its species.
+
+Less motion stops their movement. Animals are a fixed ambient population; their positions restart on reload, while existing plant saves remain compatible. This version does not add feeding, breeding, or animal placement controls.
+
 ## Project structure
 
+- `src/Animals.tsx`: species models, gait and grazing animation.
+- `src/wildlife.ts`: bounded animal movement and obstacle avoidance.
 - `src/Scene.tsx`: procedural terrain, plants, lighting, wildlife, rain, camera and ground picking.
 - `src/App.tsx`: toolbar, actions, simulation clock, confirmations and screenshot download.
 - `src/simulation.ts`: pure placement, growth and watering rules.
