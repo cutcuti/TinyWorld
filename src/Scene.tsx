@@ -1,3 +1,12 @@
+import {
+  PALETTES,
+  PlantedLotus,
+  Lilies,
+  PondFlowers,
+  SeasonParticles,
+  Rainbow,
+} from "./GardenDetails";
+import type { Species } from "./wildlife";
 import Animals from "./Animals";
 import { useEffect, useMemo, useRef } from "react";
 import {
@@ -16,6 +25,7 @@ import * as THREE from "three";
 import type { OrbitControls as OrbitImpl } from "three-stdlib";
 import {
   canPlant,
+  inviteAnimal,
   RADIUS,
   type Plant,
   type Tool,
@@ -23,8 +33,13 @@ import {
 } from "./simulation";
 type Props = {
   world: World;
+  onAnimal: (id: number, species: Species) => void;
+  onHarvest: (id: string) => void;
+  onShed: (species: Species) => void;
+  rainbow: boolean;
   tool: Tool;
   species: Plant["kind"];
+  animalSpecies: Species;
   cursor: [number, number] | null;
   setCursor: (p: [number, number] | null) => void;
   act: (x: number, z: number) => void;
@@ -52,7 +67,19 @@ function Pebble({
     </mesh>
   );
 }
-function Tree({ p, reduced }: { p: Plant; reduced: boolean }) {
+function Tree({
+  p,
+  reduced,
+  season,
+  tool,
+  onHarvest,
+}: {
+  p: Plant;
+  reduced: boolean;
+  season: World["season"];
+  tool: Tool;
+  onHarvest: (id: string) => void;
+}) {
   const ref = useRef<THREE.Group>(null);
   useFrame(({ clock }) => {
     if (ref.current)
@@ -62,7 +89,16 @@ function Tree({ p, reduced }: { p: Plant; reduced: boolean }) {
   });
   const s = 0.18 + 0.82 * p.growth;
   return (
-    <group position={[p.x, 0.29, p.z]} scale={s}>
+    <group
+      position={[p.x, 0.29, p.z]}
+      scale={s}
+      onClick={(e) => {
+        if (tool === "explore" && e.delta < 6) {
+          e.stopPropagation();
+          onHarvest(p.id);
+        }
+      }}
+    >
       <group ref={ref}>
         <mesh position={[0, 0.65, 0]} castShadow>
           <cylinderGeometry args={[0.085, 0.15, 1.3, 7]} />
@@ -77,12 +113,35 @@ function Tree({ p, reduced }: { p: Plant; reduced: boolean }) {
           <mesh key={i} position={[x, y, z]} castShadow>
             <icosahedronGeometry args={[r, 2]} />
             <meshStandardMaterial
-              color={["#719779", "#a5b57a", "#558775"][p.hue % 3]}
+              color={PALETTES[season].trees[p.hue % 3]}
               roughness={1}
             />
           </mesh>
         ))}
       </group>
+      {p.kind === "tree" &&
+        p.growth >= 1 &&
+        Array.from({ length: Math.floor(p.fruit ?? 0) }, (_, i) => (
+          <group
+            key={i}
+            position={[
+              Math.sin(i * 2.4) * 0.62,
+              1.25 + (i % 2) * 0.4,
+              Math.cos(i * 2.4) * 0.6,
+            ]}
+          >
+            <mesh castShadow>
+              <sphereGeometry args={[0.14, 10, 8]} />
+              <meshStandardMaterial
+                color={season === 2 ? "#d98e4f" : "#cb6555"}
+              />
+            </mesh>
+            <mesh position={[0, 0.14, 0]} rotation={[0, 0, 0.25]}>
+              <cylinderGeometry args={[0.013, 0.013, 0.1, 5]} />
+              <meshStandardMaterial color="#76583e" />
+            </mesh>
+          </group>
+        ))}
       {p.water > 0 && (
         <Sparkles
           count={5}
@@ -218,7 +277,19 @@ function Rain({
   );
 }
 function Content(props: Props) {
-  const { world, tool, cursor, setCursor, act, rain, view } = props;
+  const {
+    world,
+    tool,
+    cursor,
+    setCursor,
+    act,
+    rain,
+    view,
+    onAnimal,
+    onHarvest,
+    onShed,
+    rainbow,
+  } = props;
   const { camera, size } = useThree();
   useEffect(() => {
     if (camera instanceof THREE.PerspectiveCamera) {
@@ -262,7 +333,7 @@ function Content(props: Props) {
   const night = world.time < 6 || world.time > 19;
   const daylight = Math.max(0, Math.sin(((world.time - 6) / 24) * Math.PI * 2));
   const sky = new THREE.Color("#202b4b").lerp(
-    new THREE.Color("#dae9eb"),
+    new THREE.Color(PALETTES[world.season].sky),
     daylight,
   );
   useFrame(() => {
@@ -316,7 +387,10 @@ function Content(props: Props) {
         </mesh>
         <mesh position={[0, 0.03, 0]} receiveShadow castShadow>
           <cylinderGeometry args={[6, 6.07, 0.45, 64]} />
-          <meshStandardMaterial color="#92ad7a" roughness={1} />
+          <meshStandardMaterial
+            color={PALETTES[world.season].grass}
+            roughness={1}
+          />
         </mesh>
         <mesh
           rotation={[-Math.PI / 2, 0, 0]}
@@ -414,35 +488,55 @@ function Content(props: Props) {
           night={night}
           reduced={world.reduced}
           tool={tool}
+          onAnimal={onAnimal}
+          onShed={onShed}
+          time={world.time}
+          seeds={world.animalSeeds}
+          key={world.mode}
         />
+        {world.mode !== "free" && <PondFlowers season={world.season} />}
+        <SeasonParticles season={world.season} reduced={world.reduced} />
+        <Rainbow show={rainbow && world.season !== 3} />
         {world.plants.map((p) =>
           p.kind === "tree" ? (
-            <Tree key={p.id} p={p} reduced={world.reduced} />
+            <Tree
+              key={p.id}
+              p={p}
+              reduced={world.reduced}
+              season={world.season}
+              tool={tool}
+              onHarvest={onHarvest}
+            />
+          ) : p.kind === "lotus" ? (
+            <PlantedLotus key={p.id} p={p} />
+          ) : p.kind === "lilies" ? (
+            <Lilies key={p.id} p={p} />
           ) : (
             <Flowers key={p.id} p={p} />
           ),
         )}
-        {Array.from({ length: 7 }, (_, i) => (
-          <group
-            key={i}
-            position={[-2 + i * 0.55, 0.27, -0.7 + Math.sin(i * 2) * 0.3]}
-          >
-            <mesh position={[0, 0.12, 0]}>
-              <cylinderGeometry args={[0.035, 0.045, 0.24, 6]} />
-              <meshStandardMaterial color="#e9d6b8" />
-            </mesh>
-            <mesh position={[0, 0.25, 0]} scale={[1, 0.5, 1]}>
-              <sphereGeometry
-                args={[0.14, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2]}
-              />
-              <meshStandardMaterial
-                color="#e7b49c"
-                emissive="#f4b979"
-                emissiveIntensity={night ? 2 : 0}
-              />
-            </mesh>
-          </group>
-        ))}
+        {world.mode !== "free" &&
+          Array.from({ length: 7 }, (_, i) => (
+            <group
+              key={i}
+              position={[-2 + i * 0.55, 0.27, -0.7 + Math.sin(i * 2) * 0.3]}
+            >
+              <mesh position={[0, 0.12, 0]}>
+                <cylinderGeometry args={[0.035, 0.045, 0.24, 6]} />
+                <meshStandardMaterial color="#e9d6b8" />
+              </mesh>
+              <mesh position={[0, 0.25, 0]} scale={[1, 0.5, 1]}>
+                <sphereGeometry
+                  args={[0.14, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2]}
+                />
+                <meshStandardMaterial
+                  color="#e7b49c"
+                  emissive="#f4b979"
+                  emissiveIntensity={night ? 2 : 0}
+                />
+              </mesh>
+            </group>
+          ))}
         {!night &&
           world.plants
             .filter((p) => p.kind === "flowers" && p.growth > 0.85)
@@ -476,7 +570,12 @@ function Content(props: Props) {
               color={
                 tool === "rain"
                   ? "#f6fdff"
-                  : canPlant(world.plants, ...cursor)
+                  : (
+                        tool === "animal"
+                          ? inviteAnimal(world, props.animalSpecies, ...cursor)
+                              .world !== world
+                          : canPlant(world.plants, ...cursor, props.species)
+                      )
                     ? "#f6ffcb"
                     : "#e5a099"
               }

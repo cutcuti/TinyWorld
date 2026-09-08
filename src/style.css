@@ -650,4 +650,496 @@ footer > span {
   }
 }
 
-.animal-label { display: block; white-space: nowrap; padding: 7px 12px; border-radius: 16px; background: #f6f7ebed; color: #344c46; font-size: 12px; box-shadow: 0 3px 15px #243d4b18; }
+.animal-label {
+  display: block;
+  white-space: nowrap;
+  padding: 7px 12px;
+  border-radius: 16px;
+  background: #f6f7ebed;
+  color: #344c46;
+  font-size: 12px;
+  box-shadow: 0 3px 15px #243d4b18;
+}
+.basket {
+  position: absolute;
+  top: 95px;
+  right: 40px;
+  display: flex;
+  gap: 17px;
+  align-items: center;
+  background: #f8faf1b3;
+  border: 1px solid #ffffffa0;
+  backdrop-filter: blur(12px);
+  border-radius: 22px;
+  padding: 10px 15px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: #344c46;
+}
+.basket span {
+  white-space: nowrap;
+}
+.season-controls {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+}
+.season-button,
+.sound-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border: 1px solid #ffffffa0;
+  border-radius: 15px;
+  background: #f8faf1b3;
+  backdrop-filter: blur(12px);
+  font-size: 13px;
+}
+.season-button {
+  min-width: 140px;
+  justify-content: space-between;
+}
+.sound-button span {
+  display: none;
+}
+.species {
+  width: max-content;
+}
+.night .basket,
+.night .season-button,
+.night .sound-button {
+  background: #243d4bdd;
+  color: #eef2df;
+  border-color: #ffffff20;
+}
+.night .animal-label {
+  background: #344b53;
+  color: #fff1d1;
+}
+.season-button:hover {
+  background: #f8faf1;
+}
+.night .season-button:hover {
+  background: #365563;
+}
+@media (max-width: 1050px) and (min-width: 641px) {
+  .season-controls {
+    bottom: 105px;
+  }
+  .basket {
+    top: 155px;
+  }
+  .time-panel {
+    bottom: 105px;
+  }
+}
+@media (max-width: 640px) {
+  main {
+    min-height: 600px;
+  }
+  .world-caption {
+    display: none;
+  }
+  .basket {
+    top: 73px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    padding: 8px 14px;
+    gap: 20px;
+    font-size: 13px;
+  }
+  .hint {
+    top: 116px;
+    font-size: 11px;
+  }
+  .toast {
+    top: 160px;
+    max-width: 92%;
+    font-size: 12px;
+  }
+  .bottom-ui {
+    bottom: 48px;
+    left: 12px;
+    right: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 10px;
+    border: 1px solid #ffffffe0;
+    border-radius: 22px;
+    background: #f4f8efd9;
+    backdrop-filter: blur(20px);
+    align-items: center;
+    pointer-events: auto;
+  }
+  .night .bottom-ui {
+    background: #243d4be8;
+    border-color: #ffffff20;
+  }
+  .tool-area {
+    grid-column: 1/-1;
+    grid-row: 2;
+    margin: 0;
+    width: 100%;
+  }
+  .season-controls {
+    position: static;
+    grid-column: 1;
+    grid-row: 1;
+    gap: 4px;
+    align-items: center;
+  }
+  .season-button {
+    padding: 10px 8px;
+    min-width: 0;
+    gap: 6px;
+    font-size: 12px;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+  }
+  .sound-button {
+    padding: 10px 6px;
+    background: transparent;
+    border: 0;
+  }
+  .time-panel {
+    position: static;
+    grid-column: 2;
+    grid-row: 1;
+    width: auto;
+    min-width: 0;
+    padding: 0 3px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    backdrop-filter: none;
+  }
+  .time-heading {
+    font-size: 10px;
+    justify-content: end;
+  }
+  .time-heading > span:first-child {
+    display: none;
+  }
+  .time-controls {
+    gap: 6px;
+    margin-top: 3px;
+  }
+  .time-controls button {
+    min-height: 32px;
+    min-width: 26px;
+  }
+  .time-controls input {
+    height: 6px;
+  }
+  .toolbar {
+    width: 100%;
+    padding: 4px;
+    box-shadow: none;
+    border-radius: 13px;
+    background: #ffffff70;
+  }
+  .toolbar button {
+    height: 43px;
+    flex: 1;
+    width: auto;
+    flex-direction: row;
+    gap: 6px;
+    border-radius: 10px;
+    font-size: 13px;
+  }
+  .toolbar button svg {
+    width: 18px;
+  }
+  .species {
+    position: static;
+    transform: none;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    border-radius: 12px;
+    padding: 3px;
+    margin-bottom: 5px;
+    background: #ffffff60;
+  }
+  .species button {
+    padding: 8px 10px;
+    flex: 1;
+    justify-content: center;
+    font-size: 12px;
+  }
+  .mode-help {
+    font-size: 11px;
+    margin: 0 0 7px;
+    text-align: center;
+  }
+  .night .time-panel,
+  .night .season-button,
+  .night .sound-button {
+    background: transparent;
+  }
+  .night .toolbar {
+    background: #ffffff0d;
+  }
+  footer {
+    bottom: 13px;
+    left: 17px;
+    right: 17px;
+  }
+  footer label,
+  footer button {
+    font-size: 11px;
+  }
+  .scene {
+    inset: 0;
+  }
+  .animal-label {
+    font-size: 11px;
+  }
+}
+@media (max-width: 370px) {
+  .brand {
+    font-size: 19px;
+  }
+  .brand-mark {
+    display: none;
+  }
+  .season-button {
+    font-size: 11px;
+    padding: 8px 4px;
+  }
+  .bottom-ui {
+    left: 8px;
+    right: 8px;
+  }
+  .toolbar button {
+    font-size: 12px;
+  }
+  .mode-help {
+    font-size: 10px;
+  }
+}
+.sleep-label {
+  font:
+    12px "DM Sans",
+    sans-serif;
+  white-space: nowrap;
+  color: #fff6d7;
+  background: #253951ed;
+  border: 1px solid #d3dfed55;
+  border-radius: 14px;
+  padding: 5px 9px;
+  pointer-events: none;
+}
+.animal-picker {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  background: #f5f8ec;
+  padding: 9px;
+  border-radius: 13px;
+  margin-bottom: 7px;
+  font-size: 13px;
+}
+.animal-picker select {
+  font: inherit;
+  color: inherit;
+  background: #fff;
+  border: 1px solid #81978c;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+.night .animal-picker,
+.night .animal-picker select {
+  color: #f4f7e9;
+  background: #293f50;
+}
+.night {
+  color: #f4f7e9;
+}
+.night .eyebrow,
+.night .tiny-label,
+.night .world-caption p,
+.night h1 em,
+.night footer,
+.night .mode-help {
+  color: #e0eee7;
+}
+.night footer {
+  color: #e0eee7;
+}
+.night .save-state,
+.night .island-label {
+  opacity: 1;
+  color: #dfebe6;
+}
+.night .hint,
+.night .time-panel,
+.night .toolbar,
+.night .species,
+.night .icon-button,
+.night .basket,
+.night .season-button,
+.night .sound-button {
+  background: #243b50f5;
+  color: #f4f7e9;
+  border-color: #aabebd66;
+}
+.night .clock {
+  color: #eef4e6;
+  opacity: 1;
+}
+.night .species button[aria-pressed="true"] {
+  background: #d5dfbd;
+  color: #253e36;
+}
+.night .toolbar button:hover:not([aria-pressed="true"]) {
+  background: #3b5867;
+}
+.night .toast:not(:empty) {
+  background: #243b50;
+  color: #fff6dd;
+  border: 1px solid #aabebd88;
+}
+.night input[type="range"],
+.night input[type="checkbox"] {
+  accent-color: #d5dfbd;
+}
+.night footer button {
+  color: #eff5e8;
+  border-bottom-color: #becdbe99;
+}
+.night footer label {
+  color: #eff5e8;
+}
+@media (max-width: 640px) {
+  .night .bottom-ui {
+    background: #20364df5;
+    border-color: #afc5c066;
+  }
+  .night .time-panel,
+  .night .season-button,
+  .night .sound-button {
+    background: #20364d;
+  }
+  .night .mode-help {
+    color: #e0eee7;
+  }
+  .night .toolbar {
+    background: #304c60;
+  }
+  .night .species {
+    background: #2c4659;
+  }
+  .species button {
+    padding: 8px 5px;
+    font-size: 11px;
+    gap: 3px;
+  }
+  .species button svg {
+    width: 13px;
+  }
+  .toolbar button {
+    min-width: 0;
+    font-size: 12px;
+  }
+  .animal-picker {
+    margin-bottom: 5px;
+    padding: 5px;
+    font-size: 12px;
+  }
+  footer > div {
+    gap: 12px;
+  }
+}
+
+.night .toolbar button {
+  transition: none;
+}
+/* Sky-facing text follows actual sky luminance, including dawn and dusk. */
+.brand,
+.eyebrow,
+.tiny-label,
+.world-caption h1,
+.world-caption h1 em,
+.world-caption p,
+.island-label,
+footer > span {
+  color: var(--sky-ink);
+  opacity: 1;
+}
+.toolbar,
+.species,
+.time-panel,
+.season-button,
+.sound-button,
+.icon-button,
+.basket,
+.hint {
+  background: #f4f7ed;
+  color: #253e36;
+}
+.save-state {
+  background: #f4f7ed;
+  color: #253e36;
+  padding: 8px 12px;
+  border-radius: 20px;
+  opacity: 1;
+}
+.mode-help {
+  background: #f4f7ed;
+  color: #253e36;
+  padding: 4px 9px;
+  border-radius: 12px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto 10px;
+}
+footer > div {
+  background: #f4f7ed;
+  color: #253e36;
+  border-radius: 14px;
+  padding: 5px 10px;
+}
+.night .mode-help,
+.night .save-state,
+.night footer > div {
+  background: #243b50;
+  color: #f4f7e9;
+}
+.night .save-state {
+  opacity: 1;
+}
+.night .hint {
+  background: #243b50;
+}
+.island-label {
+  font-size: 10px;
+}
+@media (max-width: 640px) {
+  .mode-help {
+    font-size: 10px;
+    margin-bottom: 5px;
+    padding: 2px 5px;
+    background: transparent;
+  }
+  footer > div {
+    padding: 3px 7px;
+  }
+  .night .mode-help {
+    background: transparent;
+  }
+  .time-panel,
+  .season-button,
+  .sound-button {
+    background: transparent;
+  }
+}

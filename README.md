@@ -1,83 +1,84 @@
 # Little Living World
 
-A peaceful, interactive 3D floating garden. Plant a tree, bring a little rain, and watch your island move from morning light to glowing mushrooms and fireflies at night.
+A small floating garden full of plants, farm animals, seasons, and wonderfully improbable bedtime arrangements.
 
-Built with TypeScript, React, Vite, React Three Fiber, Drei, and procedural Three.js geometry. No backend, account, API key, or paid asset is required. Optional Google Fonts fall back to system fonts if unavailable.
+[Play the live world](https://tinyworld-drab.vercel.app)
+
+TypeScript, React, Vite, React Three Fiber, Drei, and procedural Three.js geometry. No backend, API key, account, paid asset, or downloaded sound sample is required. Optional Google Fonts fall back to system fonts.
 
 ## Run locally
 
-Use Node.js 22.12+ (Node.js 24 LTS recommended).
+Node.js 22.12+ is required; Node.js 24 LTS is recommended.
 
 ```sh
 npm ci
 npm run dev
+npm run build       # TypeScript check and production bundle
+npm run preview     # Serve dist/
+npm test            # Simulation, migration, wildlife and bedtime checks
+npm run test:e2e    # Real browser interaction tests; requires installed Chrome
 ```
 
-Open the local URL printed by Vite.
+Browser tests use Chrome. To use bundled Chromium, run `npx playwright install chromium` and remove `channel: 'chrome'` from `playwright.config.ts`.
 
-```sh
-npm run build       # TypeScript check and production bundle in dist/
-npm run preview     # Serve the production bundle
-npm test            # Simulation and save validation tests
-npm run test:e2e    # Browser interaction tests; requires Google Chrome
-```
+## Explore and collect
 
-Browser tests use the installed Chrome channel. To use Playwright's bundled Chromium instead, run `npx playwright install chromium` and remove `channel: 'chrome'` in `playwright.config.ts`.
+Drag to orbit; scroll or pinch to zoom. The circular arrow resets the camera. In **Explore**, click or tap:
 
-## Controls
+- **Cows:** collect milk, with a 20-second refill.
+- **Chickens:** collect eggs, with a 12-second refill.
+- **Fruit trees:** pick ripe fruit. Mature trees hold up to three fruits. Fruit regrows about every 15 seconds, faster in autumn, and stops growing during winter.
+- **Dogs:** trigger ten seconds of playful chasing. Chickens, cows, goats and sheep scatter, ducks paddle faster, and the horse stays calm. Chasing stays bounded within the island.
+- **Other animals:** say hello and hear their call when sound is enabled.
 
-- **Explore:** drag with a mouse or one finger to orbit. Scroll or pinch to zoom. The top-right circular arrow restores the camera.
-- **Plant:** choose Trees or Flowers, then click or tap open grass. Water, island edges, and occupied spots reject planting. Drags and multi-touch gestures do not plant.
-- **Rain:** click or tap to create a short rain shower. A ring previews the watering radius on pointer hover; touch shows it when interacting.
-- **Time:** drag the time slider through a full day; pause freezes the clock while plants continue growing.
-- **Camera:** downloads a PNG of the 3D scene with no interface overlay.
-- **Less motion:** stops tree sway, butterfly flight, and particle travel. Defaults to the device's reduced-motion preference.
-- **Start fresh:** opens a confirmation before replacing the garden with its original plants.
+The harvest basket saves locally. **Sound** is off on each page load; enable it to hear synthesized animal calls on clicks and occasional calls during the day. These are playful procedural sounds rather than recordings. Muting suspends audio; background tabs are quiet.
 
-Buttons, toggles, and the time slider support keyboard navigation with Tab, Enter/Space, and slider arrow keys. Spatial gardening and camera orbit use a pointer or touch.
+The garden has three chickens, two cows, two goats, two sheep, one horse, two dogs and two ducks. Lotus flowers and water lilies decorate the pond.
 
-## Simulation and saving
+## Gardening and seasons
 
-Plants grow from seedlings to maturity in about 83 seconds. Rain affects plants within 1.35 world units, accelerating growth for eight seconds. Mature flowers attract up to six butterflies by day. Night brings seven glowing mushrooms and 28 fireflies. The world is capped at 85 plants, and rain uses one bounded, instanced particle system. Pixel density is capped at 1.6.
+**Plant** offers Trees, Flowers, Lilies, and Lotus. Click open grass for land plants or the pond for lotus. Water, edges and occupied spots reject unsuitable planting. **Rain** waters nearby plants and brings a brief rainbow. Plants reach maturity in roughly 83 seconds; watering accelerates growth for eight seconds within 1.35 world units. Mature flower patches attract butterflies.
 
-The clock takes about six minutes for a full cycle. Time steps are independent of frame rate and capped after a background-tab delay. There is no offline growth. The island has a flat, plantable plateau; its rocky sides and edge are not plantable.
+The season button advances only in order: **Spring → Summer → Autumn → Winter → Spring**. Blossom colors and fresh grass give way to summer greens, autumn foliage and fallen leaves, then snowy trees, ground and falling snow. The pond remains open for ducks. Season choice is saved.
 
-Plants, time, pause, and motion settings save to browser local storage every 1.5 seconds and when the page is left. Saves are validated before use; malformed data restores the original garden. Saves stay on the same browser and origin. Clearing browser storage removes them; private browsing or blocked storage may prevent saving, and the interface shows that state.
+The time slider controls daylight. Pause holds the clock while plants and creature behavior continue. A full day lasts roughly six minutes.
 
-## Animal neighbors
+## Ridiculously tiny bedrooms
 
-The island is 25% wider than the original, with about 56% more surface area. Ten procedural animals live in the garden: three chickens, two cows, two goats, two sheep, and one horse. They wander, pause to graze, avoid the pond, trees, one another and the island edge, and rest at night. Hover an animal in Explore mode to see its species.
+At 19:00 animals stretch, then hop to bed. Farm animals and dogs squeeze into a comically small shed; sheep, the horse, and ducks take cloud beds. Click the shed at night to invite a random sleepy resident out for a short visit before it returns.
 
-Less motion stops their movement. Animals are a fixed ambient population; their positions restart on reload, while existing plant saves remain compatible. This version does not add feeding, breeding, or animal placement controls.
+Chickens start waking at 05:42; the rest follow at 06:18. Moving the clock back to daytime wakes the animals too. **Less motion** skips stretches and hops, stops wandering and particle travel, and moves animals directly between resting states.
 
-## Project structure
+## Free world
 
-- `src/Animals.tsx`: species models, gait and grazing animation.
-- `src/wildlife.ts`: bounded animal movement and obstacle avoidance.
-- `src/Scene.tsx`: procedural terrain, plants, lighting, wildlife, rain, camera and ground picking.
-- `src/App.tsx`: toolbar, actions, simulation clock, confirmations and screenshot download.
-- `src/simulation.ts`: pure placement, growth and watering rules.
-- `src/persistence.ts`: versioned local save validation and recovery.
-- `src/style.css`: responsive overlay and day/night interface.
-- `src/simulation.test.ts`, `tests/world.spec.ts`: unit and browser checks.
+**Free world** opens a separate, initially bare island with no plants or animals. Plant your own garden, then use **Animals** to choose and place neighbors. Ducks need the pond; other animals need grass. A tiny shed appears when you invite residents.
 
-## Deploy on Vercel
+**Return to garden** switches back to the original garden. Each mode keeps its own save. **Start fresh** asks for confirmation and resets only the current mode. Free worlds allow up to 20 animals; both modes allow up to 85 plants.
 
-Import this GitHub repository into Vercel. Use the Vite framework preset, `npm run build`, and output directory `dist`. The included `vercel.json` supplies these settings. No environment variables are needed. GitHub integration can deploy subsequent pushes automatically.
+## Interface and persistence
 
-Alternatively, from a signed-in Vercel CLI, run `vercel --prod`. Only publish when you intend the site to be public. Build output, local settings and secrets are excluded from Git.
+On phones the plant submenu, time slider, seasons, sound and tools stay together in a bottom dock. Night controls use opaque dark surfaces and bright text; active buttons use pale surfaces and dark labels. Buttons, toggles, selectors, and the slider support keyboard navigation. Spatial planting and animal interactions use mouse or touch.
 
-## Verification and limitations
+The camera button exports the rendered canvas as a PNG without the interface. WebGL2 is required, with an explanatory fallback if unavailable. Pixel density is capped at 1.6 and particle populations are bounded; animal geometry and materials are shared.
 
-Automated checks cover placement restrictions, bounded growth and watering, save validation, browser planting/watering, reload persistence, day/night controls, camera gestures and reset, screenshot download, reset confirmation, and a 390px touch viewport. Browser testing uses desktop Chrome with mobile emulation; physical iOS/Android devices and Safari are not verified. A WebGL-capable browser is required; an explanatory fallback is provided when WebGL cannot start.
+Plants, harvests, cooldowns, seasons, settings, and free-world resident placements save every 1.5 seconds and when leaving the page. Existing garden saves migrate automatically. Saves remain on the same browser and origin, with no cloud sync or offline growth. Clearing browser storage removes them. Animal wandering positions and bedtime animation progress restart on reload; the free-world placement layout is preserved.
 
-The Three.js runtime makes the initial JavaScript bundle larger than a typical static page. Terrain is a single plateau, wildlife behavior is deliberately simple, and there is no shared or cross-device save.
+## Code map
 
-## Small roadmap
+- `src/App.tsx`: controls, actions, save scheduling and separate world modes.
+- `src/Scene.tsx`: island, trees, camera and picking.
+- `src/Animals.tsx`: animal models, interaction and sleeping visuals.
+- `src/wildlife.ts`: bounded roaming, obstacle avoidance and chasing.
+- `src/rest.ts`: stretching, shed visits, cloud beds and staggered waking.
+- `src/simulation.ts`: growth, seasons, harvesting and placement rules.
+- `src/persistence.ts`: validation and migration of saved worlds.
+- `src/GardenDetails.tsx`: lilies, lotus, seasonal particles and rainbows.
+- `src/audio.ts`: opt-in procedural animal sounds.
 
-- More plant shapes and richer terrain details.
-- Optional ambient sound, off by default.
-- Seasonal color palettes and gentle creature behaviors.
-- Export/import for portable worlds.
+## Deployment and verification
 
-Accounts, multiplayer, and terrain sculpting are outside this first version.
+Vercel deploys the GitHub `main` branch using the included Vite configuration. Build command: `npm run build`; output: `dist`. No environment variables are needed. Build output, local settings, browser-test artifacts and secrets are excluded from Git.
+
+Tests cover growth, collections and cooldowns, seasons, save migration, free-world placement, animal boundaries, chasing and horse immunity, bedtime and shed visits, browser clicks, audio opt-in, keyboard controls, camera gestures, reset, screenshot export, and mobile control placement and active-button contrast. Testing uses desktop Chrome and mobile emulation; physical devices and Safari remain unverified.
+
+The Three.js runtime makes the initial bundle larger than a typical static page. Creature behavior is intentionally simple. There is no feeding, breeding, multiplayer, terrain sculpting or cross-device save.

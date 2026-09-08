@@ -1,3 +1,7 @@
+import { Color } from "three";
+import { PALETTES } from "./GardenDetails";
+import { enableAudio, animalSound } from "./audio";
+import type { Species } from "./wildlife";
 import { Component, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   MousePointer2,
@@ -15,11 +19,20 @@ import {
   Move,
   Check,
   Leaf,
+  Volume2,
+  VolumeX,
+  ShoppingBasket,
+  PawPrint,
 } from "lucide-react";
 import Scene from "./Scene";
-import { KEY, loadWorld } from "./persistence";
+import { KEY, FREE_KEY, MODE_KEY, loadWorld } from "./persistence";
 import {
   advance,
+  inviteAnimal,
+  SEASONS,
+  nextSeason,
+  collectAnimal,
+  harvest,
   canPlant,
   initialWorld,
   LIMIT,
@@ -51,6 +64,7 @@ class SceneBoundary extends Component<
 export default function App() {
   const [world, setWorld] = useState(loadWorld);
   const [tool, setTool] = useState<Tool>("explore");
+  const [animalSpecies, setAnimalSpecies] = useState<Species>("chicken");
   const [species, setSpecies] = useState<Plant["kind"]>("tree");
   const [cursor, setCursor] = useState<[number, number] | null>(null);
   const [rain, setRain] = useState<[number, number] | null>(null);
@@ -74,12 +88,52 @@ export default function App() {
   }, [hint]);
   const [notice, setNotice] = useState("");
   const [saved, setSaved] = useState(true);
+  const [sound, setSound] = useState(false);
+  const [rainbow, setRainbow] = useState(false);
+  useEffect(
+    () => () => {
+      void enableAudio(false);
+    },
+    [],
+  );
+  async function toggleSound() {
+    const next = !sound;
+    const ok = await enableAudio(next);
+    setSound(next && ok);
+    if (next && !ok)
+      setNotice("Sound could not start. Try again in your browser.");
+  }
+  function onAnimal(id: number, species: Species) {
+    animalSound(species);
+    const result = collectAnimal(current.current, id, species);
+    current.current = result.world;
+    setWorld(result.world);
+    setNotice(result.message);
+  }
+  function onHarvest(id: string) {
+    const result = harvest(current.current, id);
+    current.current = result.world;
+    setWorld(result.world);
+    setNotice(result.message);
+  }
+
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const current = useRef(world);
   current.current = world;
   const rainEnd = useRef(0);
   const dialog = useRef<HTMLDialogElement>(null);
   const night = world.time < 6 || world.time > 19;
+  const sky = new Color("#202b4b").lerp(
+    new Color(PALETTES[world.season].sky),
+    Math.max(0, Math.sin(((world.time - 6) / 24) * Math.PI * 2)),
+  );
+  const skyLuminance = 0.2126 * sky.r + 0.7152 * sky.g + 0.0722 * sky.b;
+  const skyInk =
+    skyLuminance > 0.4
+      ? "#253e36"
+      : skyLuminance > 0.179
+        ? "#000000"
+        : "#ffffff";
   useEffect(() => {
     let last = performance.now();
     const id = setInterval(() => {
@@ -88,13 +142,18 @@ export default function App() {
       last = now;
       setWorld((w) => advance(w, dt));
       if (now > rainEnd.current) setRain(null);
+      if (now > rainEnd.current + 8000) setRainbow(false);
     }, 100);
     return () => clearInterval(id);
   }, []);
   useEffect(() => {
     const save = () => {
       try {
-        localStorage.setItem(KEY, JSON.stringify(current.current));
+        localStorage.setItem(
+          current.current.mode === "free" ? FREE_KEY : KEY,
+          JSON.stringify(current.current),
+        );
+        localStorage.setItem(MODE_KEY, current.current.mode);
         setSaved(true);
       } catch {
         setSaved(false);
@@ -118,10 +177,52 @@ export default function App() {
     if (reset) dialog.current?.showModal();
     else dialog.current?.close();
   }, [reset]);
+  function switchMode() {
+    const mode = current.current.mode === "free" ? "garden" : "free";
+    try {
+      localStorage.setItem(
+        current.current.mode === "free" ? FREE_KEY : KEY,
+        JSON.stringify(current.current),
+      );
+      localStorage.setItem(MODE_KEY, mode);
+    } catch {
+      setSaved(false);
+    }
+    const next = loadWorld(mode);
+    current.current = next;
+    setWorld(next);
+    setTool(mode === "free" ? "plant" : "explore");
+    setRain(null);
+    setRainbow(false);
+    setNotice(
+      mode === "free"
+        ? "Your own blank canvas. Plant something, then invite a neighbor."
+        : "Welcome back to your garden.",
+    );
+  }
+  function onShed(species: Species) {
+    animalSound(species);
+    setNotice(`A sleepy ${species} says hello… then heads back to bed.`);
+  }
   function act(x: number, z: number) {
+    if (tool === "animal") {
+      const result = inviteAnimal(current.current, animalSpecies, x, z);
+      current.current = result.world;
+      setWorld(result.world);
+      setNotice(result.message);
+      return;
+    }
     if (tool === "plant") {
+      if (
+        (current.current.animalSeeds === null ||
+          current.current.animalSeeds.length > 0) &&
+        Math.hypot(x - 3.9, z - 2.2) < 0.9
+      ) {
+        setNotice("Leave a little room for the tiny shed.");
+        return;
+      }
       const w = current.current;
-      if (!canPlant(w.plants, x, z)) {
+      if (!canPlant(w.plants, x, z, species)) {
         setNotice(
           w.plants.length >= LIMIT
             ? "Your island is full. Enjoy your little forest."
@@ -139,7 +240,7 @@ export default function App() {
         hue: Math.floor(Math.random() * 3),
       };
       setWorld((previous) =>
-        canPlant(previous.plants, x, z)
+        canPlant(previous.plants, x, z, species)
           ? { ...previous, plants: [...previous.plants, plant] }
           : previous,
       );
@@ -154,6 +255,7 @@ export default function App() {
       setWorld((w) => waterAt(w, x, z));
       setRain([x, z]);
       rainEnd.current = performance.now() + 2600;
+      setRainbow(true);
       setHint(false);
     }
   }
@@ -177,13 +279,22 @@ export default function App() {
   const minutes = Math.floor((world.time - hour) * 60);
   const time = `${String(hour).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
   return (
-    <main className={night ? "night" : ""}>
+    <main
+      className={night ? "night" : ""}
+      data-season={SEASONS[world.season]}
+      style={{ "--sky-ink": skyInk } as React.CSSProperties}
+    >
       <div className="scene" aria-label="Interactive floating island">
         <SceneBoundary>
           <Scene
             world={world}
+            onAnimal={onAnimal}
+            onHarvest={onHarvest}
+            onShed={onShed}
+            rainbow={rainbow}
             tool={tool}
             species={species}
+            animalSpecies={animalSpecies}
             cursor={cursor}
             setCursor={setCursor}
             act={act}
@@ -226,6 +337,18 @@ export default function App() {
           </button>
         </div>
       </header>
+      <div className="basket" aria-label="Harvest basket">
+        <ShoppingBasket size={17} />
+        <span aria-label={`${world.basket.milk} milk`}>
+          🥛 {world.basket.milk}
+        </span>
+        <span aria-label={`${world.basket.eggs} eggs`}>
+          🥚 {world.basket.eggs}
+        </span>
+        <span aria-label={`${world.basket.fruit} fruit`}>
+          🍎 {world.basket.fruit}
+        </span>
+      </div>
       <div className="world-caption">
         <span className="tiny-label">YOUR OWN LITTLE CORNER</span>
         <h1>
@@ -237,26 +360,55 @@ export default function App() {
       </div>
       <div className="island-label">
         <span className="dot" /> THE FLOATING GARDEN{" "}
-        <span className="label-line" /> {world.plants.length} PLANTS · 10
+        <span className="label-line" /> {world.plants.length} PLANTS ·{" "}
+        {world.animalSeeds?.length ?? 14}
         ANIMALS
       </div>
       {hint && (
         <div className="hint">
           <Move size={16} />
-          <span>Drag to wander. Scroll or pinch to get closer.</span>
+          <span>Drag to explore. Tap animals and fruit trees.</span>
           <button aria-label="Dismiss hint" onClick={() => setHint(false)}>
             <X size={15} />
           </button>
         </div>
       )}
       <div className="bottom-ui">
+        <div className="season-controls">
+          <button
+            className="season-button"
+            aria-label={`Next season: ${SEASONS[(world.season + 1) % 4]}`}
+            onClick={() => {
+              const next = nextSeason(current.current);
+              current.current = next;
+              setWorld(next);
+              setNotice(`Hello, ${SEASONS[next.season].toLowerCase()}.`);
+            }}
+          >
+            <span>
+              {["🌷", "☀️", "🍂", "❄️"][world.season]} {SEASONS[world.season]}
+            </span>
+            <span aria-hidden="true">→</span>
+          </button>
+          <button
+            className="sound-button"
+            aria-label={sound ? "Mute animal sounds" : "Enable animal sounds"}
+            aria-pressed={sound}
+            onClick={toggleSound}
+          >
+            {sound ? <Volume2 size={18} /> : <VolumeX size={18} />}
+            <span>{sound ? "Sound on" : "Sound off"}</span>
+          </button>
+        </div>
         <div className="tool-area">
           <div className="mode-help">
             {tool === "explore"
-              ? "A world with nowhere to rush."
-              : tool === "plant"
-                ? "Tap an open patch of grass to plant."
-                : "Tap the garden to make a little rain."}
+              ? "Tap animals or fruit trees to say hello and collect."
+              : tool === "animal"
+                ? "Choose a neighbor, then tap a spot for them."
+                : tool === "plant"
+                  ? "Tap grass to plant. Lotuses belong in the pond."
+                  : "Tap the garden to make a little rain."}
           </div>
           {tool === "plant" && (
             <div className="species">
@@ -272,6 +424,43 @@ export default function App() {
               >
                 <Flower2 size={15} /> Flowers
               </button>
+              <button
+                aria-pressed={species === "lilies"}
+                onClick={() => setSpecies("lilies")}
+              >
+                <Flower2 size={15} /> Lilies
+              </button>
+              <button
+                aria-pressed={species === "lotus"}
+                onClick={() => setSpecies("lotus")}
+              >
+                <Flower2 size={15} /> Lotus
+              </button>
+            </div>
+          )}
+          {world.mode === "free" && tool === "animal" && (
+            <div className="animal-picker">
+              <label htmlFor="animal-choice">Invite</label>
+              <select
+                id="animal-choice"
+                aria-label="Animal to add"
+                value={animalSpecies}
+                onChange={(e) => setAnimalSpecies(e.target.value as Species)}
+              >
+                {[
+                  "chicken",
+                  "cow",
+                  "goat",
+                  "sheep",
+                  "horse",
+                  "dog",
+                  "duck",
+                ].map((s) => (
+                  <option key={s} value={s}>
+                    {s[0].toUpperCase() + s.slice(1)}
+                  </option>
+                ))}
+              </select>
             </div>
           )}
           <nav className="toolbar" aria-label="Garden tools">
@@ -294,6 +483,15 @@ export default function App() {
                 <span>{label}</span>
               </button>
             ))}
+            {world.mode === "free" && (
+              <button
+                aria-pressed={tool === "animal"}
+                onClick={() => setTool("animal")}
+              >
+                <PawPrint size={21} />
+                <span>Animals</span>
+              </button>
+            )}
           </nav>
         </div>
         <section className="time-panel" aria-label="Time of day">
@@ -350,6 +548,9 @@ export default function App() {
             />{" "}
             Less motion
           </label>
+          <button onClick={switchMode}>
+            {world.mode === "free" ? "Return to garden" : "Free world"}
+          </button>
           <button onClick={() => setReset(true)}>Start fresh</button>
         </div>
       </footer>
@@ -364,18 +565,19 @@ export default function App() {
       <dialog ref={dialog} onCancel={() => setReset(false)}>
         <h2>A fresh little beginning?</h2>
         <p>
-          This replaces your planted garden with the original island. Your
-          current plants will be removed.
+          This clears the plants and harvest basket in this mode. Your other
+          world stays saved.
         </p>
         <div>
           <button onClick={() => setReset(false)}>Keep my garden</button>
           <button
             className="confirm"
             onClick={() => {
-              const fresh = initialWorld();
+              const fresh = initialWorld(current.current.mode);
               setWorld(fresh);
               current.current = fresh;
               setRain(null);
+              setRainbow(false);
               setReset(false);
               setNotice("A fresh world, full of possibility.");
             }}
