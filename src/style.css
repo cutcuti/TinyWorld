@@ -1319,3 +1319,83 @@ footer > div {
     display: none;
   }
 }
+
+/* Keep the marked utility groups on two compact mobile rows. */
+@media (max-width: 640px) {
+  .basket {
+    left: 25px;
+    right: auto;
+    transform: none;
+    min-height: 40px;
+    gap: 10px;
+  }
+  .top-actions,
+  [data-controls="collapsed"] .top-actions {
+    display: flex;
+    position: absolute;
+    top: 53px;
+    right: 0;
+    gap: 6px;
+  }
+  .top-actions .icon-button {
+    width: 40px;
+    height: 40px;
+  }
+  .control-center {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    width: min(calc(100% - 24px), 420px);
+    margin: 0 auto;
+    align-items: center;
+  }
+  .control-center .bottom-ui {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+  .control-center footer {
+    grid-column: 1;
+    grid-row: 2;
+    min-width: 0;
+  }
+  .control-center footer > div {
+    justify-content: space-evenly;
+    gap: 6px;
+    padding: 0 7px;
+  }
+  .control-center footer label,
+  .control-center footer button {
+    font-size: 10px;
+    min-height: 44px;
+    white-space: nowrap;
+  }
+  .control-center footer input {
+    margin-left: 0;
+  }
+  [data-controls="expanded"] .controls-toggle {
+    grid-column: 2;
+    grid-row: 2;
+    min-height: 44px;
+    padding: 0 10px;
+    gap: 4px;
+    font-size: 10px;
+  }
+  [data-controls="collapsed"] .controls-toggle {
+    grid-column: 1 / -1;
+    justify-self: center;
+  }
+}
+@media (max-width: 370px) {
+  [data-controls="expanded"] .controls-toggle > span {
+    display: none;
+  }
+  [data-controls="expanded"] .controls-toggle {
+    width: 44px;
+    justify-content: center;
+    padding: 0;
+  }
+  .basket {
+    left: 20px;
+    padding: 7px 9px;
+    gap: 7px;
+  }
+}

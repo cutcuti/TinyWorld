@@ -146,6 +146,17 @@ test("mobile menus stay at the bottom and night labels remain readable", async (
       return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
     });
   expect(contrast).toBeGreaterThan(4.5);
+  for (const [left, right] of [
+    [".basket", ".top-actions"],
+    ["#garden-settings", ".controls-toggle"],
+  ]) {
+    const a = await page.locator(left).boundingBox(),
+      b = await page.locator(right).boundingBox();
+    expect(Math.abs(a!.y + a!.height / 2 - b!.y - b!.height / 2)).toBeLessThan(
+      2,
+    );
+    expect(a!.x + a!.width).toBeLessThanOrEqual(b!.x);
+  }
   await page.screenshot({ path: "test-results/mobile-night-controls.png" });
   await page.getByRole("button", { name: "Explore", exact: true }).click();
   await expect(open).toBeVisible();
