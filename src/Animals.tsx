@@ -1,3 +1,4 @@
+import HorseModel from "./HorseModel";
 import { stepRest, createRest } from "./rest";
 import { animalSound } from "./audio";
 import { useEffect, useRef, useState } from "react";
@@ -221,6 +222,8 @@ function Creature({
             <meshBasicMaterial color="#dcefe5" transparent opacity={0.5} />
           </mesh>
         </>
+      ) : horse ? (
+        <HorseModel headRef={head} legsRef={legs} />
       ) : (
         <>
           {dog && (
@@ -345,22 +348,6 @@ function Creature({
                   c="#694c37"
                 />
               ))}
-            {horse && (
-              <>
-                <Part
-                  p={[0, -0.04, -0.04]}
-                  s={[0.16, 0.35, 0.19]}
-                  c={fur}
-                  rotation={[0.35, 0, 0]}
-                />
-                <Part
-                  p={[0, 0.1, -0.19]}
-                  s={[0.065, 0.32, 0.07]}
-                  c={dark}
-                  rotation={[0.35, 0, 0]}
-                />
-              </>
-            )}
             <Part
               p={[0, horse ? 0.23 : 0, 0.06]}
               s={
