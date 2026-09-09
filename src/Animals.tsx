@@ -154,19 +154,23 @@ function Creature({
       : animal.moving
         ? Math.abs(Math.sin(t * 8)) * 0.018
         : 0;
-    if (head.current)
-      head.current.rotation.x = reduced
+    const blend = 1 - Math.exp(-dt * 10);
+    if (head.current) {
+      const tilt = reduced
         ? 0
         : night
           ? 0.3
           : !animal.moving
             ? 0.16 + Math.sin(t * 2) * 0.13
             : 0;
+      head.current.rotation.x += (tilt - head.current.rotation.x) * blend;
+    }
     if (legs.current)
       legs.current.children.forEach((leg, i) => {
-        leg.rotation.x = animal.moving
+        const stride = animal.moving
           ? Math.sin(t * 8 + (i % 2) * Math.PI) * 0.22
           : 0;
+        leg.rotation.x += (stride - leg.rotation.x) * blend;
       });
   });
   return (

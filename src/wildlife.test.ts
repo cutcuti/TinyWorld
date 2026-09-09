@@ -51,3 +51,33 @@ test("dogs trigger bounded zoomies, scare the flock and ducks but never horses",
   assert.equal(dog.chaseLeft, 0);
   assert.ok(all.every((a) => !a.scared));
 });
+
+test("chasing turns gradually without position jumps at obstacles or other animals", () => {
+  for (const dt of [1 / 60, 1 / 30, 0.1]) {
+    const all = createAnimals(),
+      plants = initialWorld().plants;
+    // Start with ordinary wandering so the new-plant recovery has already settled.
+    for (const a of all) stepAnimal(a, dt, plants, all, false, false);
+    for (const dog of all.filter((a) => a.species === "dog")) startChase(dog);
+    let distance = 0;
+    for (let frame = 0; frame < 10 / dt; frame++) {
+      for (const a of all) {
+        const { x, z, heading } = a;
+        stepAnimal(a, dt, plants, all, false, false);
+        if (a.species === "duck") continue;
+        const moved = Math.hypot(a.x - x, a.z - z);
+        assert.ok(moved <= 1.1 * dt + 1e-9, "no relocation during the chase");
+        const turned = Math.abs(
+          Math.atan2(
+            Math.sin(a.heading - heading),
+            Math.cos(a.heading - heading),
+          ),
+        );
+        assert.ok(turned <= 2.8 * dt + 1e-9, "turn speed stays bounded");
+        assert.ok(walkable(a.x, a.z, plants, [], a.id));
+        if (a.species !== "horse") distance += moved;
+      }
+    }
+    assert.ok(distance > 15, "the animals run instead of just freezing");
+  }
+});

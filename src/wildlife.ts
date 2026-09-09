@@ -14,6 +14,8 @@ export type Animal = {
   turnIn: number;
   chaseLeft: number;
   scared: boolean;
+  steerHeading?: number;
+  steerFor?: number;
   rest: RestState;
 };
 export const SPECIES: Species[] = [
@@ -97,7 +99,8 @@ export function stepAnimal(
     a.moving = true;
     return;
   }
-  if (!walkable(a.x, a.z, plants, others, a.id)) {
+  // Only a changed obstacle may relocate an animal; nearby animals never teleport it.
+  if (!walkable(a.x, a.z, plants, [], a.id)) {
     let found = false;
     for (let ring = 1; ring <= 6 && !found; ring++)
       for (let i = 0; i < 16; i++) {
@@ -115,17 +118,19 @@ export function stepAnimal(
   if (reduced || (night && !a.scared && a.chaseLeft === 0)) return;
   a.turnIn -= d;
   a.phase += d;
+  let desired = a.heading;
   if (a.scared && dog) {
-    a.heading = Math.atan2(a.x - dog.x, a.z - dog.z);
+    desired = Math.atan2(a.x - dog.x, a.z - dog.z);
   } else if (a.chaseLeft > 0) {
     const targets = others.filter(
       (o) => !["horse", "dog", "duck"].includes(o.species),
     );
     const target = targets[Math.floor(a.phase / 2) % targets.length];
-    if (target) a.heading = Math.atan2(target.x - a.x, target.z - a.z);
+    if (target) desired = Math.atan2(target.x - a.x, target.z - a.z);
   } else {
     if (a.turnIn <= 0) {
-      a.heading += (random(a) - 0.5) * 1.8;
+      desired += (random(a) - 0.5) * 1.8;
+      a.steerFor = 0;
       a.turnIn = 2 + random(a) * 4;
     }
     if ((a.phase + a.id * 1.7) % 10 > 7) return;
@@ -138,19 +143,34 @@ export function stepAnimal(
         : a.species === "chicken"
           ? 0.3
           : 0.22;
-  // Try a few headings around obstacles so fleeing never leaves the island.
-  for (const turn of [0, 0.7, -0.7, 1.5, -1.5, Math.PI]) {
-    const heading = a.heading + turn,
-      x = a.x + Math.sin(heading) * speed * d,
-      z = a.z + Math.cos(heading) * speed * d;
-    if (walkable(x, z, plants, others, a.id)) {
-      a.x = x;
-      a.z = z;
-      a.heading = heading;
-      a.moving = true;
-      return;
-    }
+  // Hold an escape direction briefly instead of flipping around an obstacle each frame.
+  a.steerFor = Math.max(0, (a.steerFor ?? 0) - d);
+  const clear = (heading: number, distance: number) =>
+    walkable(
+      a.x + Math.sin(heading) * distance,
+      a.z + Math.cos(heading) * distance,
+      plants,
+      others,
+      a.id,
+    );
+  if (a.steerFor === 0 || a.steerHeading === undefined) {
+    const side = a.id % 2 ? 1 : -1;
+    const choices = [0, 0.55, -0.55, 1.1, -1.1, 1.8, -1.8, Math.PI];
+    const turn = choices.find((turn) => clear(desired + turn * side, 0.45));
+    a.steerHeading =
+      turn === undefined
+        ? a.heading + (side * Math.PI) / 2
+        : desired + turn * side;
+    a.steerFor = 0.65;
   }
-  a.heading += 1.8;
-  a.turnIn = 0.8;
+  const delta = Math.atan2(
+    Math.sin(a.steerHeading - a.heading),
+    Math.cos(a.steerHeading - a.heading),
+  );
+  a.heading += Math.max(-2.8 * d, Math.min(2.8 * d, delta));
+  if (clear(a.heading, speed * d)) {
+    a.x += Math.sin(a.heading) * speed * d;
+    a.z += Math.cos(a.heading) * speed * d;
+    a.moving = true;
+  }
 }
