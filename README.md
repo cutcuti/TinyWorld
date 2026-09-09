@@ -83,4 +83,4 @@ Tests cover growth, collections and cooldowns, seasons, save migration, free-wor
 
 The Three.js runtime makes the initial bundle larger than a typical static page. Creature behavior is intentionally simple. There is no feeding, breeding, multiplayer, terrain sculpting or cross-device save.
 
-On mobile, Explore starts with a compact bottom dock. Tap **Controls** for tools, seasons, time and settings; choose **Explore** or **Back to exploring** to collapse them again.
+On mobile, every mode uses a compact bottom dock showing the active tool and selection. Tap **Controls** for tools, seasons, time and settings; **Hide controls** keeps the current tool active. Choosing a plant, animal type or Rain collapses the menu so the island stays clear. The headline remains visible above the island.

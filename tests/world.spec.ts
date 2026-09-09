@@ -129,6 +129,29 @@ test("narrow touch viewport keeps tools accessible and plants flowers", async ({
   const point = await ground(page, -2.5, 2.7);
   await page.touchscreen.tap(point.x, point.y);
   await expect(page.locator(".island-label")).toContainText("9 PLANTS");
+  await expect(page.locator("main")).toHaveAttribute("data-tool", "plant");
+  await expect(page.getByRole("slider", { name: "Time of day" })).toBeHidden();
+  await expect(page.locator(".controls-toggle")).toContainText(
+    "Plant · Flowers",
+  );
+  await expect(page.locator(".world-caption")).toBeVisible();
+  await page.screenshot({ path: "test-results/mobile-plant-collapsed.png" });
+  await page.getByRole("button", { name: "Open garden controls" }).tap();
+  await page.getByRole("button", { name: "Rain", exact: true }).tap();
+  await expect(page.locator("main")).toHaveAttribute("data-tool", "rain");
+  await expect(page.locator(".bottom-ui")).toBeHidden();
+  await page.touchscreen.tap(point.x, point.y);
+  await expect
+    .poll(async () => (await read(page))?.plants.at(-1).water)
+    .toBeGreaterThan(0);
+  await page.getByRole("button", { name: "Open garden controls" }).tap();
+  await page.getByRole("button", { name: "Free world", exact: true }).tap();
+  await page.getByRole("button", { name: "Animals", exact: true }).tap();
+  await page.getByRole("button", { name: "Close garden controls" }).tap();
+  await expect(page.locator("main")).toHaveAttribute("data-tool", "animal");
+  await page.touchscreen.tap(point.x, point.y);
+  await expect(page.locator(".island-label")).toContainText(/1\s*ANIMALS/);
+  await page.getByRole("button", { name: "Open garden controls" }).tap();
   await expect(page.getByRole("slider", { name: "Time of day" })).toBeVisible();
   expect(
     await page.evaluate(

@@ -67,15 +67,30 @@ export default function App() {
   const [world, setWorld] = useState(loadWorld);
   const [controlsOpen, setControlsOpen] = useState(false);
   const [tool, setTool] = useState<Tool>("explore");
-  const controlsExpanded = controlsOpen || tool !== "explore";
+  const controlsExpanded = controlsOpen;
   const controlsToggle = useRef<HTMLButtonElement>(null);
   function closeControls() {
     setControlsOpen(false);
-    setTool("explore");
     setCursor(null);
   }
   const [animalSpecies, setAnimalSpecies] = useState<Species>("chicken");
   const [species, setSpecies] = useState<Plant["kind"]>("tree");
+  const activeToolLabel =
+    tool === "plant"
+      ? `Plant · ${{ tree: "Trees", flowers: "Flowers", lilies: "Lilies", lotus: "Lotus" }[species]}`
+      : tool === "animal"
+        ? `Add · ${animalSpecies}`
+        : tool === "rain"
+          ? "Rain"
+          : "Explore";
+  const ActiveToolIcon =
+    tool === "plant"
+      ? Sprout
+      : tool === "animal"
+        ? PawPrint
+        : tool === "rain"
+          ? CloudRain
+          : MousePointer2;
   const [cursor, setCursor] = useState<[number, number] | null>(null);
   const [rain, setRain] = useState<[number, number] | null>(null);
   const [view, setView] = useState(0);
@@ -279,6 +294,7 @@ export default function App() {
   return (
     <main
       className={night ? "night" : ""}
+      data-tool={tool}
       data-controls={controlsExpanded ? "expanded" : "collapsed"}
       data-season={SEASONS[world.season]}
       style={{ "--sky-ink": skyInk } as React.CSSProperties}
@@ -395,9 +411,9 @@ export default function App() {
           {controlsExpanded ? (
             <ChevronDown size={18} />
           ) : (
-            <MousePointer2 size={18} />
+            <ActiveToolIcon size={18} />
           )}
-          <span>{controlsExpanded ? "Back to exploring" : "Explore"}</span>
+          <span>{controlsExpanded ? "Hide controls" : activeToolLabel}</span>
           {!controlsExpanded && (
             <>
               <span className="compact-clock">{time}</span>
@@ -447,25 +463,37 @@ export default function App() {
               <div className="species">
                 <button
                   aria-pressed={species === "tree"}
-                  onClick={() => setSpecies("tree")}
+                  onClick={() => {
+                    setSpecies("tree");
+                    closeControls();
+                  }}
                 >
                   <TreePine size={15} /> Trees
                 </button>
                 <button
                   aria-pressed={species === "flowers"}
-                  onClick={() => setSpecies("flowers")}
+                  onClick={() => {
+                    setSpecies("flowers");
+                    closeControls();
+                  }}
                 >
                   <Flower2 size={15} /> Flowers
                 </button>
                 <button
                   aria-pressed={species === "lilies"}
-                  onClick={() => setSpecies("lilies")}
+                  onClick={() => {
+                    setSpecies("lilies");
+                    closeControls();
+                  }}
                 >
                   <Flower2 size={15} /> Lilies
                 </button>
                 <button
                   aria-pressed={species === "lotus"}
-                  onClick={() => setSpecies("lotus")}
+                  onClick={() => {
+                    setSpecies("lotus");
+                    closeControls();
+                  }}
                 >
                   <Flower2 size={15} /> Lotus
                 </button>
@@ -478,7 +506,10 @@ export default function App() {
                   id="animal-choice"
                   aria-label="Animal to add"
                   value={animalSpecies}
-                  onChange={(e) => setAnimalSpecies(e.target.value as Species)}
+                  onChange={(e) => {
+                    setAnimalSpecies(e.target.value as Species);
+                    closeControls();
+                  }}
                 >
                   {[
                     "chicken",
@@ -509,7 +540,7 @@ export default function App() {
                   aria-pressed={tool === id}
                   onClick={() => {
                     setTool(id);
-                    if (id === "explore") setControlsOpen(false);
+                    if (id !== "plant") setControlsOpen(false);
                     setCursor(null);
                   }}
                 >

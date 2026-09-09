@@ -1228,3 +1228,94 @@ footer > div {
     display: none;
   }
 }
+
+/* Mobile cover composition: typography above the island, tools below it. */
+@media (max-width: 640px) {
+  main {
+    min-height: 100svh;
+  }
+  .world-caption {
+    display: block;
+    top: 145px;
+    left: 25px;
+    right: 25px;
+    pointer-events: none;
+  }
+  .world-caption .tiny-label {
+    font-size: 7px;
+    letter-spacing: 2px;
+  }
+  .world-caption h1 {
+    font-size: clamp(30px, 8.8vw, 39px);
+    line-height: 1.06;
+    margin: 12px 0 10px;
+    letter-spacing: -1px;
+  }
+  .world-caption p {
+    display: block;
+    font-size: 11px;
+    margin: 0;
+  }
+  .basket {
+    padding: 7px 12px;
+    gap: 14px;
+    font-size: 11px;
+  }
+  .control-center {
+    gap: 5px;
+  }
+  .control-center .bottom-ui {
+    padding: 8px;
+    gap: 5px;
+  }
+  .control-center .mode-help {
+    display: none;
+  }
+  .controls-toggle {
+    padding: 0 16px;
+    gap: 8px;
+    max-width: 100%;
+  }
+  .compact-clock {
+    padding-left: 8px;
+  }
+  .hint {
+    display: none;
+  }
+  .toast {
+    top: 116px;
+    font-size: 10px;
+  }
+}
+@media (max-width: 640px) and (max-height: 700px) {
+  .world-caption {
+    top: 124px;
+  }
+  .world-caption h1 {
+    font-size: 29px;
+    margin: 7px 0;
+  }
+  .world-caption .tiny-label {
+    display: none;
+  }
+  .world-caption p {
+    font-size: 10px;
+  }
+}
+@media (max-width: 640px) and (max-height: 580px) {
+  .world-caption {
+    top: 118px;
+  }
+  .world-caption h1 {
+    font-size: 24px;
+  }
+  .world-caption h1 br {
+    display: none;
+  }
+  .world-caption h1 em::before {
+    content: " ";
+  }
+  .world-caption p {
+    display: none;
+  }
+}
