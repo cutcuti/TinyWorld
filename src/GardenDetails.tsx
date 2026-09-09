@@ -159,21 +159,21 @@ export function SeasonParticles({
 export function Rainbow({ show }: { show: boolean }) {
   if (!show) return null;
   return (
-    <group position={[0, 1.5, -4.4]}>
-      {["#d7928b", "#e3b67e", "#e3d895", "#a1c5a1", "#93bac8"].map((c, i) => (
-        <mesh key={c}>
-          <ringGeometry
-            args={[2.8 + i * 0.09, 2.87 + i * 0.09, 64, 1, 0, Math.PI]}
-          />
-          <meshBasicMaterial
-            color={c}
-            transparent
-            opacity={0.48}
-            side={THREE.DoubleSide}
-            depthWrite={false}
-          />
-        </mesh>
-      ))}
+    <group position={[0, 0.35, 0]} rotation={[0, -0.35, 0]}>
+      {["#d98d91", "#e5ae77", "#ecda8a", "#98bd95", "#83b9ca", "#a59aca"].map(
+        (color, i) => (
+          <mesh key={color}>
+            <torusGeometry args={[2.9 - i * 0.14, 0.085, 12, 80, Math.PI]} />
+            <meshStandardMaterial
+              color={color}
+              roughness={0.4}
+              metalness={0.05}
+              emissive={color}
+              emissiveIntensity={0.16}
+            />
+          </mesh>
+        ),
+      )}
     </group>
   );
 }
