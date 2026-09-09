@@ -310,6 +310,14 @@ function Content(props: Props) {
       pointers.current.add(e.pointerId);
       if (pointers.current.size > 1) down.current = null;
     };
+    const move = (e: PointerEvent) => {
+      const start = down.current;
+      if (
+        start?.id === e.pointerId &&
+        Math.hypot(e.clientX - start.x, e.clientY - start.y) >= 8
+      )
+        down.current = null;
+    };
     const end = (e: PointerEvent) => {
       pointers.current.delete(e.pointerId);
     };
@@ -318,11 +326,13 @@ function Content(props: Props) {
       down.current = null;
     };
     window.addEventListener("pointerdown", start, true);
+    window.addEventListener("pointermove", move, true);
     window.addEventListener("pointerup", end);
     window.addEventListener("pointercancel", clear);
     window.addEventListener("blur", clear);
     return () => {
       window.removeEventListener("pointerdown", start, true);
+      window.removeEventListener("pointermove", move, true);
       window.removeEventListener("pointerup", end);
       window.removeEventListener("pointercancel", clear);
       window.removeEventListener("blur", clear);
@@ -372,7 +382,7 @@ function Content(props: Props) {
         minPolarAngle={0.3}
         maxPolarAngle={1.35}
         target={[0, 0.1, 0]}
-        enableRotate={tool === "explore"}
+        enableRotate
       />
       <group>
         <mesh position={[0, -0.65, 0]} rotation={[0, 0.13, 0]} castShadow>

@@ -193,3 +193,47 @@ test("keyboard controls and unavailable-WebGL fallback", async ({
   ).toBeVisible();
   await context.close();
 });
+
+test("collapsed mobile Plant mode rotates with one finger while taps still plant", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+  });
+  const page = await context.newPage();
+  await page.goto("/");
+  await page.getByRole("button", { name: "Open garden controls" }).tap();
+  await page.getByLabel("Less motion").check();
+  await page.getByRole("button", { name: "Pause day-night cycle" }).tap();
+  await page.getByRole("button", { name: "Plant", exact: true }).tap();
+  await page.getByRole("button", { name: "Flowers", exact: true }).tap();
+  await expect(page.locator(".bottom-ui")).toBeHidden();
+  const cdp = await context.newCDPSession(page);
+  const touch = async (type: string, x?: number, y?: number) =>
+    cdp.send("Input.dispatchTouchEvent", {
+      type,
+      touchPoints:
+        x === undefined ? [] : [{ x, y, radiusX: 2, radiusY: 2, id: 1 }],
+    });
+  const before = await page.locator("canvas").screenshot();
+  await touch("touchStart", 140, 600);
+  for (let x = 150; x <= 240; x += 10) await touch("touchMove", x, 600);
+  await touch("touchEnd");
+  const after = await page.locator("canvas").screenshot();
+  expect(after.equals(before)).toBe(false);
+  await expect(page.locator(".island-label")).toContainText("8 PLANTS");
+  await page.getByRole("button", { name: "Reset view" }).tap();
+  const point = await ground(page, -2.5, 2.7);
+  await touch("touchStart", point.x, point.y);
+  await touch("touchMove", point.x + 50, point.y);
+  await touch("touchMove", point.x, point.y);
+  await touch("touchEnd");
+  await expect(page.locator(".island-label")).toContainText("8 PLANTS");
+  await page.getByRole("button", { name: "Reset view" }).tap();
+  await page.touchscreen.tap(point.x, point.y);
+  await expect(page.locator(".island-label")).toContainText("9 PLANTS");
+  await expect(page.locator("main")).toHaveAttribute("data-tool", "plant");
+  await context.close();
+});
