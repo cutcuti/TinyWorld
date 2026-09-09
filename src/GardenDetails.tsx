@@ -1,7 +1,7 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { inWater, type Plant, type Season } from "./simulation";
+import { ISLAND_RADIUS, inWater, type Plant, type Season } from "./simulation";
 export const PALETTES = [
   {
     grass: "#92ad7a",
@@ -159,11 +159,17 @@ export function SeasonParticles({
 export function Rainbow({ show }: { show: boolean }) {
   if (!show) return null;
   return (
-    <group position={[0, 0.35, 0]} rotation={[0, -0.35, 0]}>
+    <group
+      position={[0, 0.35, 0]}
+      rotation={[0, -0.35, 0]}
+      scale={[1, 0.78, 1]}
+    >
       {["#d98d91", "#e5ae77", "#ecda8a", "#98bd95", "#83b9ca", "#a59aca"].map(
         (color, i) => (
           <mesh key={color}>
-            <torusGeometry args={[2.9 - i * 0.14, 0.085, 12, 80, Math.PI]} />
+            <torusGeometry
+              args={[ISLAND_RADIUS - 0.12 - i * 0.18, 0.1, 12, 96, Math.PI]}
+            />
             <meshStandardMaterial
               color={color}
               roughness={0.4}
