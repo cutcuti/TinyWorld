@@ -45,9 +45,9 @@ The time slider controls daylight. Pause holds the clock while plants and creatu
 
 ## Cloud bedrooms
 
-At 19:00 all animals stretch, then hop onto cloud beds. Every species sleeps on a cloud; there is no shed.
+At 19:00 clouds descend to the island’s edge while animals stretch. Animals walk to their clouds and board one at a time, then ride up to bed. Every species sleeps on a cloud; there is no shed.
 
-Chickens start waking at 05:42; the rest follow at 06:18. Moving the clock back to daytime wakes the animals too. **Less motion** skips stretches and hops, stops wandering and particle travel, and moves animals directly between resting states.
+Clouds carry animals back to the edge in the morning, then they walk home. Chickens start waking at 05:42; the rest follow at 06:18. Moving the clock back to daytime wakes the animals too. **Less motion** skips stretches, boarding and cloud rides, stops wandering and particle travel, and moves animals directly between resting states.
 
 ## Free world
 

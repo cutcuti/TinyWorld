@@ -1,4 +1,4 @@
-import { bedPosition, stepRest, createRest } from "./rest";
+import { stepRest, createRest } from "./rest";
 import { animalSound } from "./audio";
 import { useEffect, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
@@ -114,7 +114,7 @@ function Creature({
   const badge = useRef<THREE.Group>(null);
   const clicked = useRef(0);
   useFrame((_, dt) => {
-    const resting = stepRest(animal, dt, time, reduced);
+    const resting = stepRest(animal, dt, time, reduced, all, plants);
     if (!resting) stepAnimal(animal, dt, plants, all, night, reduced);
     if (!root.current) return;
     if (badge.current)
@@ -449,6 +449,27 @@ function Creature({
     </group>
   );
 }
+function CloudBed({ animal }: { animal: Animal }) {
+  const ref = useRef<THREE.Group>(null);
+  useFrame(() => {
+    if (!ref.current) return;
+    ref.current.visible = animal.rest.stage !== "awake";
+    const p = animal.rest.cloud;
+    ref.current.position.set(p.x, p.y - 0.07, p.z);
+  });
+  return (
+    <group ref={ref} visible={false}>
+      {[-1, 0, 1].map((i) => (
+        <Part key={i} p={[i * 0.38, 0, 0]} s={[0.52, 0.16, 0.42]} c="#dfe9ea" />
+      ))}
+      {animal.rest.stage === "sleep" && (
+        <Html center position={[0, 0.9, 0]} style={{ pointerEvents: "none" }}>
+          <span className="sleep-label">z z z</span>
+        </Html>
+      )}
+    </group>
+  );
+}
 export default function Animals({
   plants,
   night,
@@ -507,33 +528,9 @@ export default function Animals({
   }, [night]);
   return (
     <group>
-      {(night || time < 6.5) &&
-        animals.current.map((a) => {
-          const p = bedPosition(a);
-          return (
-            <group
-              key={"bed" + a.id}
-              position={[p.x, p.y - 0.07, p.z]}
-              visible={night || time < 6.5}
-            >
-              {[-1, 0, 1].map((i) => (
-                <Part
-                  key={i}
-                  p={[i * 0.38, 0, 0]}
-                  s={[0.52, 0.16, 0.42]}
-                  c="#dfe9ea"
-                />
-              ))}
-              <Html
-                center
-                position={[0, 0.9, 0]}
-                style={{ pointerEvents: "none" }}
-              >
-                <span className="sleep-label">z z z</span>
-              </Html>
-            </group>
-          );
-        })}
+      {animals.current.map((a) => (
+        <CloudBed key={"bed" + a.id} animal={a} />
+      ))}
       {animals.current.map((animal) => (
         <Creature
           key={animal.id}
