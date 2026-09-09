@@ -1143,3 +1143,88 @@ footer > div {
     background: transparent;
   }
 }
+
+/* A quiet mobile Explore dock; editing controls open only when needed. */
+.control-center {
+  display: contents;
+}
+.controls-toggle {
+  display: none;
+}
+@media (max-width: 640px) {
+  .control-center {
+    position: fixed;
+    z-index: 10;
+    left: 12px;
+    right: 12px;
+    bottom: max(16px, env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    max-height: calc(100dvh - 150px);
+    overflow-y: auto;
+    pointer-events: none;
+  }
+  .control-center .bottom-ui {
+    position: relative;
+    inset: auto;
+    width: min(100%, 420px);
+    flex-shrink: 0;
+    order: 1;
+    box-sizing: border-box;
+  }
+  .control-center footer {
+    position: static;
+    order: 2;
+    width: auto;
+    pointer-events: auto;
+    flex-shrink: 0;
+  }
+  .control-center footer > div {
+    padding: 4px 12px;
+  }
+  .control-center footer button,
+  .control-center footer label {
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .controls-toggle {
+    order: 3;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 0 20px;
+    border: 1px solid #ffffffb3;
+    border-radius: 28px;
+    background: #f4f7ed;
+    color: #253e36;
+    box-shadow: 0 6px 24px #20382c18;
+    font-size: 12px;
+    pointer-events: auto;
+  }
+  .compact-clock {
+    padding-left: 12px;
+    border-left: 1px solid #253e3633;
+    font-variant-numeric: tabular-nums;
+  }
+  .night .controls-toggle {
+    background: #243b50;
+    color: #f4f7e9;
+    border-color: #afc5c066;
+  }
+  .night .compact-clock {
+    border-color: #afc5c066;
+  }
+  [data-controls="collapsed"] .bottom-ui,
+  [data-controls="collapsed"] .control-center footer,
+  [data-controls="collapsed"] .top-actions {
+    display: none;
+  }
+  [data-controls="collapsed"] .hint {
+    display: none;
+  }
+}

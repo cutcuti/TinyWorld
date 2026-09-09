@@ -23,6 +23,8 @@ import {
   VolumeX,
   ShoppingBasket,
   PawPrint,
+  SlidersHorizontal,
+  ChevronDown,
 } from "lucide-react";
 import Scene from "./Scene";
 import { KEY, FREE_KEY, MODE_KEY, loadWorld } from "./persistence";
@@ -63,7 +65,15 @@ class SceneBoundary extends Component<
 }
 export default function App() {
   const [world, setWorld] = useState(loadWorld);
+  const [controlsOpen, setControlsOpen] = useState(false);
   const [tool, setTool] = useState<Tool>("explore");
+  const controlsExpanded = controlsOpen || tool !== "explore";
+  const controlsToggle = useRef<HTMLButtonElement>(null);
+  function closeControls() {
+    setControlsOpen(false);
+    setTool("explore");
+    setCursor(null);
+  }
   const [animalSpecies, setAnimalSpecies] = useState<Species>("chicken");
   const [species, setSpecies] = useState<Plant["kind"]>("tree");
   const [cursor, setCursor] = useState<[number, number] | null>(null);
@@ -269,6 +279,7 @@ export default function App() {
   return (
     <main
       className={night ? "night" : ""}
+      data-controls={controlsExpanded ? "expanded" : "collapsed"}
       data-season={SEASONS[world.season]}
       style={{ "--sky-ink": skyInk } as React.CSSProperties}
     >
@@ -360,187 +371,224 @@ export default function App() {
           </button>
         </div>
       )}
-      <div className="bottom-ui">
-        <div className="season-controls">
-          <button
-            className="season-button"
-            aria-label={`Next season: ${SEASONS[(world.season + 1) % 4]}`}
-            onClick={() => {
-              const next = nextSeason(current.current);
-              current.current = next;
-              setWorld(next);
-              setNotice(`Hello, ${SEASONS[next.season].toLowerCase()}.`);
-            }}
-          >
-            <span>
-              {["🌷", "☀️", "🍂", "❄️"][world.season]} {SEASONS[world.season]}
-            </span>
-            <span aria-hidden="true">→</span>
-          </button>
-          <button
-            className="sound-button"
-            aria-label={sound ? "Mute animal sounds" : "Enable animal sounds"}
-            aria-pressed={sound}
-            onClick={toggleSound}
-          >
-            {sound ? <Volume2 size={18} /> : <VolumeX size={18} />}
-            <span>{sound ? "Sound on" : "Sound off"}</span>
-          </button>
-        </div>
-        <div className="tool-area">
-          <div className="mode-help">
-            {tool === "explore"
-              ? "Tap animals or fruit trees to say hello and collect."
-              : tool === "animal"
-                ? "Choose a neighbor, then tap a spot for them."
-                : tool === "plant"
-                  ? "Tap grass to plant. Lotuses belong in the pond."
-                  : "Tap the garden to make a little rain."}
-          </div>
-          {tool === "plant" && (
-            <div className="species">
-              <button
-                aria-pressed={species === "tree"}
-                onClick={() => setSpecies("tree")}
-              >
-                <TreePine size={15} /> Trees
-              </button>
-              <button
-                aria-pressed={species === "flowers"}
-                onClick={() => setSpecies("flowers")}
-              >
-                <Flower2 size={15} /> Flowers
-              </button>
-              <button
-                aria-pressed={species === "lilies"}
-                onClick={() => setSpecies("lilies")}
-              >
-                <Flower2 size={15} /> Lilies
-              </button>
-              <button
-                aria-pressed={species === "lotus"}
-                onClick={() => setSpecies("lotus")}
-              >
-                <Flower2 size={15} /> Lotus
-              </button>
-            </div>
+      <div
+        className="control-center"
+        onKeyDown={(e) => {
+          if (e.key === "Escape" && controlsExpanded) {
+            closeControls();
+            controlsToggle.current?.focus();
+          }
+        }}
+      >
+        <button
+          ref={controlsToggle}
+          className="controls-toggle"
+          aria-label={
+            controlsExpanded ? "Close garden controls" : "Open garden controls"
+          }
+          aria-expanded={controlsExpanded}
+          aria-controls="garden-controls garden-settings"
+          onClick={() =>
+            controlsExpanded ? closeControls() : setControlsOpen(true)
+          }
+        >
+          {controlsExpanded ? (
+            <ChevronDown size={18} />
+          ) : (
+            <MousePointer2 size={18} />
           )}
-          {world.mode === "free" && tool === "animal" && (
-            <div className="animal-picker">
-              <label htmlFor="animal-choice">Invite</label>
-              <select
-                id="animal-choice"
-                aria-label="Animal to add"
-                value={animalSpecies}
-                onChange={(e) => setAnimalSpecies(e.target.value as Species)}
-              >
-                {[
-                  "chicken",
-                  "cow",
-                  "goat",
-                  "sheep",
-                  "horse",
-                  "dog",
-                  "duck",
-                ].map((s) => (
-                  <option key={s} value={s}>
-                    {s[0].toUpperCase() + s.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <span>{controlsExpanded ? "Back to exploring" : "Explore"}</span>
+          {!controlsExpanded && (
+            <>
+              <span className="compact-clock">{time}</span>
+              <SlidersHorizontal size={17} />
+              <span>Controls</span>
+            </>
           )}
-          <nav className="toolbar" aria-label="Garden tools">
-            {(
-              [
-                { id: "explore", label: "Explore", Icon: MousePointer2 },
-                { id: "plant", label: "Plant", Icon: Sprout },
-                { id: "rain", label: "Rain", Icon: CloudRain },
-              ] as const
-            ).map(({ id, label, Icon }) => (
-              <button
-                key={id}
-                aria-pressed={tool === id}
-                onClick={() => {
-                  setTool(id);
-                  setCursor(null);
-                }}
-              >
-                <Icon size={21} />
-                <span>{label}</span>
-              </button>
-            ))}
-            {world.mode === "free" && (
-              <button
-                aria-pressed={tool === "animal"}
-                onClick={() => setTool("animal")}
-              >
-                <PawPrint size={21} />
-                <span>Animals</span>
-              </button>
-            )}
-          </nav>
-        </div>
-        <section className="time-panel" aria-label="Time of day">
-          <div className="time-heading">
-            <span>
-              {night ? <Moon size={17} /> : <Sun size={17} />}{" "}
-              {night
-                ? "Under the stars"
-                : world.time < 12
-                  ? "Morning light"
-                  : world.time < 17
-                    ? "A gentle afternoon"
-                    : "Golden hour"}
-            </span>
-            <span className="clock">{time}</span>
-          </div>
-          <div className="time-controls">
-            <Sun size={14} />
-            <input
-              aria-label="Time of day"
-              type="range"
-              min="0"
-              max="23.99"
-              step=".01"
-              value={world.time}
-              onChange={(e) =>
-                setWorld((w) => ({ ...w, time: Number(e.target.value) }))
-              }
-            />
-            <Moon size={14} />
+        </button>
+        <div className="bottom-ui" id="garden-controls">
+          <div className="season-controls">
             <button
-              aria-label={
-                world.paused
-                  ? "Resume day-night cycle"
-                  : "Pause day-night cycle"
-              }
-              onClick={() => setWorld((w) => ({ ...w, paused: !w.paused }))}
+              className="season-button"
+              aria-label={`Next season: ${SEASONS[(world.season + 1) % 4]}`}
+              onClick={() => {
+                const next = nextSeason(current.current);
+                current.current = next;
+                setWorld(next);
+                setNotice(`Hello, ${SEASONS[next.season].toLowerCase()}.`);
+              }}
             >
-              {world.paused ? <Play size={16} /> : <Pause size={16} />}
+              <span>
+                {["🌷", "☀️", "🍂", "❄️"][world.season]} {SEASONS[world.season]}
+              </span>
+              <span aria-hidden="true">→</span>
+            </button>
+            <button
+              className="sound-button"
+              aria-label={sound ? "Mute animal sounds" : "Enable animal sounds"}
+              aria-pressed={sound}
+              onClick={toggleSound}
+            >
+              {sound ? <Volume2 size={18} /> : <VolumeX size={18} />}
+              <span>{sound ? "Sound on" : "Sound off"}</span>
             </button>
           </div>
-        </section>
-      </div>
-      <footer>
-        <span>GROW SOMETHING GOOD.</span>
-        <div>
-          <label>
-            <input
-              type="checkbox"
-              checked={world.reduced}
-              onChange={(e) =>
-                setWorld((w) => ({ ...w, reduced: e.target.checked }))
-              }
-            />{" "}
-            Less motion
-          </label>
-          <button onClick={switchMode}>
-            {world.mode === "free" ? "Return to garden" : "Free world"}
-          </button>
-          <button onClick={() => setReset(true)}>Start fresh</button>
+          <div className="tool-area">
+            <div className="mode-help">
+              {tool === "explore"
+                ? "Tap animals or fruit trees to say hello and collect."
+                : tool === "animal"
+                  ? "Choose a neighbor, then tap a spot for them."
+                  : tool === "plant"
+                    ? "Tap grass to plant. Lotuses belong in the pond."
+                    : "Tap the garden to make a little rain."}
+            </div>
+            {tool === "plant" && (
+              <div className="species">
+                <button
+                  aria-pressed={species === "tree"}
+                  onClick={() => setSpecies("tree")}
+                >
+                  <TreePine size={15} /> Trees
+                </button>
+                <button
+                  aria-pressed={species === "flowers"}
+                  onClick={() => setSpecies("flowers")}
+                >
+                  <Flower2 size={15} /> Flowers
+                </button>
+                <button
+                  aria-pressed={species === "lilies"}
+                  onClick={() => setSpecies("lilies")}
+                >
+                  <Flower2 size={15} /> Lilies
+                </button>
+                <button
+                  aria-pressed={species === "lotus"}
+                  onClick={() => setSpecies("lotus")}
+                >
+                  <Flower2 size={15} /> Lotus
+                </button>
+              </div>
+            )}
+            {world.mode === "free" && tool === "animal" && (
+              <div className="animal-picker">
+                <label htmlFor="animal-choice">Invite</label>
+                <select
+                  id="animal-choice"
+                  aria-label="Animal to add"
+                  value={animalSpecies}
+                  onChange={(e) => setAnimalSpecies(e.target.value as Species)}
+                >
+                  {[
+                    "chicken",
+                    "cow",
+                    "goat",
+                    "sheep",
+                    "horse",
+                    "dog",
+                    "duck",
+                  ].map((s) => (
+                    <option key={s} value={s}>
+                      {s[0].toUpperCase() + s.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <nav className="toolbar" aria-label="Garden tools">
+              {(
+                [
+                  { id: "explore", label: "Explore", Icon: MousePointer2 },
+                  { id: "plant", label: "Plant", Icon: Sprout },
+                  { id: "rain", label: "Rain", Icon: CloudRain },
+                ] as const
+              ).map(({ id, label, Icon }) => (
+                <button
+                  key={id}
+                  aria-pressed={tool === id}
+                  onClick={() => {
+                    setTool(id);
+                    if (id === "explore") setControlsOpen(false);
+                    setCursor(null);
+                  }}
+                >
+                  <Icon size={21} />
+                  <span>{label}</span>
+                </button>
+              ))}
+              {world.mode === "free" && (
+                <button
+                  aria-pressed={tool === "animal"}
+                  onClick={() => setTool("animal")}
+                >
+                  <PawPrint size={21} />
+                  <span>Animals</span>
+                </button>
+              )}
+            </nav>
+          </div>
+          <section className="time-panel" aria-label="Time of day">
+            <div className="time-heading">
+              <span>
+                {night ? <Moon size={17} /> : <Sun size={17} />}{" "}
+                {night
+                  ? "Under the stars"
+                  : world.time < 12
+                    ? "Morning light"
+                    : world.time < 17
+                      ? "A gentle afternoon"
+                      : "Golden hour"}
+              </span>
+              <span className="clock">{time}</span>
+            </div>
+            <div className="time-controls">
+              <Sun size={14} />
+              <input
+                aria-label="Time of day"
+                type="range"
+                min="0"
+                max="23.99"
+                step=".01"
+                value={world.time}
+                onChange={(e) =>
+                  setWorld((w) => ({ ...w, time: Number(e.target.value) }))
+                }
+              />
+              <Moon size={14} />
+              <button
+                aria-label={
+                  world.paused
+                    ? "Resume day-night cycle"
+                    : "Pause day-night cycle"
+                }
+                onClick={() => setWorld((w) => ({ ...w, paused: !w.paused }))}
+              >
+                {world.paused ? <Play size={16} /> : <Pause size={16} />}
+              </button>
+            </div>
+          </section>
         </div>
-      </footer>
+        <footer id="garden-settings">
+          <span>GROW SOMETHING GOOD.</span>
+          <div>
+            <label>
+              <input
+                type="checkbox"
+                checked={world.reduced}
+                onChange={(e) =>
+                  setWorld((w) => ({ ...w, reduced: e.target.checked }))
+                }
+              />{" "}
+              Less motion
+            </label>
+            <button onClick={switchMode}>
+              {world.mode === "free" ? "Return to garden" : "Free world"}
+            </button>
+            <button onClick={() => setReset(true)}>Start fresh</button>
+          </div>
+        </footer>
+      </div>
       <div className="toast" role="status" aria-live="polite">
         {notice && (
           <>

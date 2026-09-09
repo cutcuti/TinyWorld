@@ -112,11 +112,18 @@ test("mobile menus stay at the bottom and night labels remain readable", async (
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await ready(page);
+  const open = page.getByRole("button", { name: "Open garden controls" });
+  await expect(open).toHaveAttribute("aria-expanded", "false");
+  await expect(
+    page.getByRole("navigation", { name: "Garden tools" }),
+  ).toBeHidden();
+  await page.screenshot({ path: "test-results/mobile-explore.png" });
+  await open.click();
   await page.getByRole("button", { name: "Plant", exact: true }).click();
   await page.getByRole("slider", { name: "Time of day" }).fill("22");
   for (const name of [".species", ".time-panel"]) {
     const box = await page.locator(name).boundingBox();
-    expect(box!.y).toBeGreaterThan(580);
+    expect(box!.y).toBeGreaterThan(844 * 0.6);
     expect(box!.y + box!.height).toBeLessThan(800);
   }
   const contrast = await page
@@ -140,6 +147,33 @@ test("mobile menus stay at the bottom and night labels remain readable", async (
     });
   expect(contrast).toBeGreaterThan(4.5);
   await page.screenshot({ path: "test-results/mobile-night-controls.png" });
+  await page.getByRole("button", { name: "Explore", exact: true }).click();
+  await expect(open).toBeVisible();
+  await expect(page.getByRole("slider", { name: "Time of day" })).toBeHidden();
+  await page.screenshot({ path: "test-results/mobile-night-explore.png" });
+  await open.click();
+  await page
+    .getByRole("button", { name: "Close garden controls" })
+    .press("Escape");
+  await expect(open).toBeFocused();
+  await page.setViewportSize({ width: 320, height: 568 });
+  await open.click();
+  await page.getByRole("button", { name: "Plant", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Lotus", exact: true }),
+  ).toBeInViewport();
+  await expect(
+    page.getByRole("button", { name: "Close garden controls" }),
+  ).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
+    320,
+  );
+  await page.screenshot({ path: "test-results/mobile-small-controls.png" });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await expect(open).toBeHidden();
+  await expect(
+    page.getByRole("navigation", { name: "Garden tools" }),
+  ).toBeVisible();
 });
 
 test("animal calls create audio only after sound is enabled", async ({

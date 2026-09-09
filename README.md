@@ -82,3 +82,5 @@ Vercel deploys the GitHub `main` branch using the included Vite configuration. B
 Tests cover growth, collections and cooldowns, seasons, save migration, free-world placement, animal boundaries, chasing and horse immunity, bedtime and cloud beds, browser clicks, audio opt-in, keyboard controls, camera gestures, reset, screenshot export, and mobile control placement and active-button contrast. Testing uses desktop Chrome and mobile emulation; physical devices and Safari remain unverified.
 
 The Three.js runtime makes the initial bundle larger than a typical static page. Creature behavior is intentionally simple. There is no feeding, breeding, multiplayer, terrain sculpting or cross-device save.
+
+On mobile, Explore starts with a compact bottom dock. Tap **Controls** for tools, seasons, time and settings; choose **Explore** or **Back to exploring** to collapse them again.

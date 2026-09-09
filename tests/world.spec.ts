@@ -123,6 +123,7 @@ test("narrow touch viewport keeps tools accessible and plants flowers", async ({
   const page = await context.newPage();
   await page.goto("http://127.0.0.1:5173");
   await expect(page.locator("canvas")).toBeVisible();
+  await page.getByRole("button", { name: "Open garden controls" }).tap();
   await page.getByRole("button", { name: "Plant", exact: true }).tap();
   await page.getByRole("button", { name: "Flowers", exact: true }).tap();
   const point = await ground(page, -2.5, 2.7);
