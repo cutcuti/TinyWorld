@@ -1,77 +1,111 @@
 import type { Species } from "./wildlife";
-// Small synthesized animal calls; no downloads, samples or autoplay.
+// Short CC0 recordings; source credits travel with the bundled audio assets.
 let context: AudioContext | null = null;
 let enabled = false;
+let generation = 0;
 let lastCall = -Infinity;
+const buffers = new Map<Species, Promise<AudioBuffer>>();
+const active = new Set<AudioBufferSourceNode>();
+const pitch: Record<Species, number> = {
+  cow: 1.12,
+  chicken: 1.06,
+  goat: 1.08,
+  sheep: 1.12,
+  horse: 1.08,
+  dog: 1.16,
+  duck: 1.08,
+};
+function load(species: Species) {
+  if (!buffers.has(species)) {
+    const promise = fetch(`/audio/${species}.wav`)
+      .then((response) => {
+        if (!response.ok) throw Error("Animal recording unavailable");
+        return response.arrayBuffer();
+      })
+      .then((bytes) => context!.decodeAudioData(bytes))
+      .catch((error) => {
+        buffers.delete(species);
+        throw error;
+      });
+    buffers.set(species, promise);
+  }
+  return buffers.get(species)!;
+}
+function stopCalls() {
+  for (const source of active) source.stop();
+  active.clear();
+}
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      generation++;
+      stopCalls();
+    }
+  });
+}
 export async function enableAudio(value: boolean) {
+  const request = ++generation;
   enabled = value;
   if (!value) {
+    stopCalls();
     await context?.suspend();
     return true;
   }
   try {
     context ??= new AudioContext();
     await context.resume();
-    return context.state === "running";
+    await Promise.all((Object.keys(pitch) as Species[]).map(load));
+    return enabled && request === generation && context.state === "running";
   } catch {
-    enabled = false;
+    if (request === generation) {
+      enabled = false;
+      stopCalls();
+    }
     return false;
   }
 }
-export function animalSound(species: Species, ambient = false) {
+export async function animalSound(species: Species, ambient = false) {
   if (!enabled || !context || context.state !== "running" || document.hidden)
     return;
-  const now = context.currentTime;
-  if (now - lastCall < (ambient ? 2 : 0.18)) return;
-  lastCall = now;
-  const spec: Record<Species, [number, number, number, OscillatorType]> = {
-    cow: [120, 75, 0.85, "sawtooth"],
-    chicken: [700, 330, 0.1, "triangle"],
-    goat: [310, 200, 0.45, "sawtooth"],
-    sheep: [250, 155, 0.6, "sawtooth"],
-    horse: [650, 210, 0.9, "sawtooth"],
-    dog: [190, 85, 0.18, "sawtooth"],
-    duck: [420, 210, 0.16, "sawtooth"],
-  };
-  const [from, to, duration, type] = spec[species],
-    repeat =
-      species === "chicken"
-        ? 3
-        : species === "dog" || species === "duck"
-          ? 2
-          : 1;
-  for (let i = 0; i < repeat; i++) {
-    const start = now + i * (duration + 0.08);
-    const osc = context.createOscillator(),
-      gain = context.createGain(),
-      filter = context.createBiquadFilter(),
-      vibrato = context.createOscillator(),
-      depth = context.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(from, start);
-    osc.frequency.exponentialRampToValueAtTime(to, start + duration);
-    filter.type = "lowpass";
-    filter.frequency.value = species === "chicken" ? 1600 : 850;
-    gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(
-      ambient ? 0.025 : 0.065,
-      start + 0.025,
-    );
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-    vibrato.frequency.value = species === "horse" ? 17 : 9;
-    depth.gain.value = from * 0.065;
-    vibrato.connect(depth).connect(osc.frequency);
-    osc.connect(filter).connect(gain).connect(context.destination);
-    osc.start(start);
-    osc.stop(start + duration + 0.03);
-    vibrato.start(start);
-    vibrato.stop(start + duration + 0.03);
-    osc.onended = () => {
-      osc.disconnect();
-      filter.disconnect();
-      gain.disconnect();
-      vibrato.disconnect();
-      depth.disconnect();
-    };
+  const request = generation;
+  let buffer: AudioBuffer;
+  try {
+    buffer = await load(species);
+  } catch {
+    return;
   }
+  if (
+    !enabled ||
+    request !== generation ||
+    document.hidden ||
+    context.state !== "running"
+  )
+    return;
+  const now = context.currentTime;
+  if (now - lastCall < (ambient ? 2 : 0.18) || (ambient && active.size > 0))
+    return;
+  lastCall = now;
+  // Keep rapid tapping gentle, and never stack a chorus of loud calls.
+  if (active.size >= 3) return;
+  const source = context.createBufferSource(),
+    gain = context.createGain();
+  source.buffer = buffer;
+  source.playbackRate.value =
+    pitch[species] * (1 + (Math.random() - 0.5) * 0.04);
+  const duration = buffer.duration / source.playbackRate.value;
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(ambient ? 0.14 : 0.36, now + 0.02);
+  gain.gain.setValueAtTime(
+    ambient ? 0.14 : 0.36,
+    now + Math.max(0.02, duration - 0.06),
+  );
+  gain.gain.linearRampToValueAtTime(0, now + duration);
+  source.connect(gain).connect(context.destination);
+  active.add(source);
+  source.onended = () => {
+    active.delete(source);
+    source.disconnect();
+    gain.disconnect();
+  };
+  source.start(now);
 }

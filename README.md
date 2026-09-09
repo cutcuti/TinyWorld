@@ -4,7 +4,7 @@ A small floating garden full of plants, farm animals, seasons, and wonderfully i
 
 [Play the live world](https://tinyworld-drab.vercel.app)
 
-TypeScript, React, Vite, React Three Fiber, Drei, and procedural Three.js geometry. No backend, API key, account, paid asset, or downloaded sound sample is required. Optional Google Fonts fall back to system fonts.
+TypeScript, React, Vite, React Three Fiber, Drei, and procedural Three.js geometry. No backend, API key, account or paid asset is required. Animal recordings are bundled with the app. Optional Google Fonts fall back to system fonts.
 
 ## Run locally
 
@@ -31,7 +31,7 @@ Drag to orbit; scroll or pinch to zoom. The circular arrow resets the camera. In
 - **Dogs:** trigger ten seconds of playful chasing. Chickens, cows, goats and sheep scatter, ducks paddle faster, and the horse stays calm. Chasing stays bounded within the island.
 - **Other animals:** say hello and hear their call when sound is enabled.
 
-The harvest basket saves locally. **Sound** is off on each page load; enable it to hear synthesized animal calls on clicks and occasional calls during the day. These are playful procedural sounds rather than recordings. Muting suspends audio; background tabs are quiet.
+The harvest basket saves locally. **Sound** is off on each page load; enable it to hear short animal recordings on clicks and occasional quieter calls during the day. Calls use a gentle pitch lift, small variations and softened volume. Muting stops current calls; background tabs are quiet. Sources and CC0 license details are in [audio credits](public/audio/CREDITS.md).
 
 The garden has three chickens, two cows, two goats, two sheep, one horse, two dogs and two ducks. Lotus flowers and water lilies decorate the pond.
 
@@ -73,7 +73,7 @@ Plants, harvests, cooldowns, seasons, settings, and free-world resident placemen
 - `src/simulation.ts`: growth, seasons, harvesting and placement rules.
 - `src/persistence.ts`: validation and migration of saved worlds.
 - `src/GardenDetails.tsx`: lilies, lotus, seasonal particles and rainbows.
-- `src/audio.ts`: opt-in procedural animal sounds.
+- `src/audio.ts`: opt-in sampled animal sounds.
 
 ## Deployment and verification
 

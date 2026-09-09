@@ -181,8 +181,8 @@ test("animal calls create audio only after sound is enabled", async ({
 }) => {
   await page.addInitScript(() => {
     (window as any).__tones = 0;
-    const original = AudioContext.prototype.createOscillator;
-    AudioContext.prototype.createOscillator = function () {
+    const original = AudioContext.prototype.createBufferSource;
+    AudioContext.prototype.createBufferSource = function () {
       const osc = original.call(this),
         start = osc.start.bind(osc);
       osc.start = (when?: number) => {
@@ -197,7 +197,37 @@ test("animal calls create audio only after sound is enabled", async ({
   expect(await page.evaluate(() => (window as any).__tones)).toBe(0);
   await page.getByRole("button", { name: "Enable animal sounds" }).click();
   await tap(page, 4.85, 0.8, 0);
-  expect(await page.evaluate(() => (window as any).__tones)).toBeGreaterThan(0);
+  await expect
+    .poll(() => page.evaluate(() => (window as any).__tones))
+    .toBeGreaterThan(0);
+  for (const species of [
+    "cow",
+    "chicken",
+    "goat",
+    "sheep",
+    "horse",
+    "dog",
+    "duck",
+  ]) {
+    const result = await page.evaluate(async (species) => {
+      const context = new AudioContext();
+      const response = await fetch(`/audio/${species}.wav`);
+      const buffer = await context.decodeAudioData(
+        await response.arrayBuffer(),
+      );
+      const samples = buffer.getChannelData(0);
+      const peak = samples.reduce(
+        (max, value) => Math.max(max, Math.abs(value)),
+        0,
+      );
+      await context.close();
+      return { duration: buffer.duration, peak };
+    }, species);
+    expect(result.duration).toBeGreaterThan(0.5);
+    expect(result.duration).toBeLessThan(3.2);
+    expect(result.peak).toBeGreaterThan(0.1);
+    expect(result.peak).toBeLessThan(0.8);
+  }
   await page.getByRole("button", { name: "Mute animal sounds" }).click();
   const before = await page.evaluate(() => (window as any).__tones);
   await tap(page, 4.85, 0.8, 0);
