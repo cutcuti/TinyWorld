@@ -8,6 +8,7 @@ import {
 } from "./GardenDetails";
 import type { Species } from "./wildlife";
 import Animals from "./Animals";
+import Visitors from "./CritterVisitors";
 import { useEffect, useMemo, useRef } from "react";
 import {
   Canvas,
@@ -518,6 +519,7 @@ function Content(props: Props) {
           key={world.mode}
         />
         {world.mode !== "free" && <PondFlowers season={world.season} />}
+        <Visitors world={world} key={world.mode} />
         <SeasonParticles season={world.season} reduced={world.reduced} />
         <Rainbow show={rainbow && world.season !== 3} />
         {world.plants.map((p) =>
@@ -567,16 +569,6 @@ function Content(props: Props) {
             .map((p, i) => (
               <Butterfly key={p.id} p={p} index={i} reduced={world.reduced} />
             ))}
-        {night && (
-          <Sparkles
-            count={28}
-            scale={[8, 2, 8]}
-            position={[0, 1.1, 0]}
-            size={5}
-            speed={world.reduced ? 0 : 0.25}
-            color="#ffec9b"
-          />
-        )}
         {cursor && tool !== "explore" && (
           <mesh
             position={[cursor[0], 0.3, cursor[1]]}
