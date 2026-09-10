@@ -60,19 +60,17 @@ const body = new THREE.LatheGeometry(
 body.rotateX(Math.PI / 2);
 body.scale(1, 0.92, 1);
 // A continuous tapered neck, with its crest swept forward toward the poll.
-const neck = new THREE.LatheGeometry(
-  profile([
-    [0, 0],
-    [0.22, 0.02],
-    [0.26, 0.12],
-    [0.23, 0.26],
-    [0.18, 0.42],
-    [0.135, 0.59],
-    [0.12, 0.7],
-    [0, 0.75],
-  ]),
-  32,
-);
+const neckProfile = profile([
+  [0, 0],
+  [0.22, 0.02],
+  [0.26, 0.12],
+  [0.23, 0.26],
+  [0.18, 0.42],
+  [0.135, 0.59],
+  [0.12, 0.7],
+  [0, 0.75],
+]);
+const neck = new THREE.LatheGeometry(neckProfile, 32);
 const positions = neck.attributes.position;
 for (let i = 0; i < positions.count; i++) {
   const y = positions.getY(i);
@@ -90,27 +88,81 @@ function strand(points: number[][], radius: number) {
     false,
   );
 }
-// The mane hugs one side of the crest rather than protruding like a rod.
-const mane = strand(
-  [
-    [0.025, 0.69, 0.18],
-    [0.055, 0.57, 0.055],
-    [0.1, 0.4, -0.075],
-    [0.15, 0.23, -0.17],
-    [0.17, 0.08, -0.2],
-  ],
-  0.09,
+// A thin surface following the neck, with a softly scalloped lower edge.
+// This replaces the oversized cylindrical mane and its visible open ends.
+const mane = new THREE.BufferGeometry();
+const maneVertices: number[] = [],
+  maneIndices: number[] = [];
+const rows = neckProfile.slice(5, -4),
+  columns = 20;
+rows.forEach((p, row) => {
+  const taper = Math.min(1, (row + 1) / 6, (rows.length - row) / 5);
+  for (let col = 0; col <= columns; col++) {
+    const u = col / columns;
+    const angle = Math.PI - 0.22 + (u - 0.5) * 1.55 * taper;
+    const r = p.x + 0.009;
+    const y = p.y + (row < 4 ? Math.sin(u * Math.PI * 6) * 0.009 : 0);
+    maneVertices.push(
+      Math.sin(angle) * r * 0.82,
+      y,
+      Math.cos(angle) * r + y * 0.4,
+    );
+    if (row < rows.length - 1 && col < columns) {
+      const i = row * (columns + 1) + col;
+      maneIndices.push(
+        i,
+        i + 1,
+        i + columns + 1,
+        i + 1,
+        i + columns + 2,
+        i + columns + 1,
+      );
+    }
+  }
+});
+mane.setAttribute(
+  "position",
+  new THREE.Float32BufferAttribute(maneVertices, 3),
 );
+mane.setIndex(maneIndices);
+mane.computeVertexNormals();
 const tail = strand(
   [
-    [0, 0.74, -0.48],
-    [0, 0.66, -0.61],
-    [0.015, 0.44, -0.68],
-    [0.06, 0.2, -0.7],
-    [0.1, 0.14, -0.66],
+    [0, 0.76, -0.5],
+    [0, 0.63, -0.62],
+    [0.015, 0.43, -0.67],
+    [0.055, 0.27, -0.7],
+    [0.085, 0.22, -0.76],
   ],
-  0.075,
+  0.055,
 );
+// Taper each cross-section to a fine tip, avoiding the old blunt tube silhouette.
+const tailPath = new THREE.CatmullRomCurve3(
+  [
+    [0, 0.76, -0.5],
+    [0, 0.63, -0.62],
+    [0.015, 0.43, -0.67],
+    [0.055, 0.27, -0.7],
+    [0.085, 0.22, -0.76],
+  ].map((p) => new THREE.Vector3(...(p as [number, number, number]))),
+);
+const tailPositions = tail.attributes.position;
+for (let row = 0; row <= 28; row++) {
+  const t = row / 28,
+    center = tailPath.getPointAt(t);
+  const width = 0.5 + 0.65 * Math.sin(t * Math.PI);
+  const taper = width * Math.min(1, (1 - t) * 5);
+  for (let col = 0; col <= 10; col++) {
+    const i = row * 11 + col;
+    const p = new THREE.Vector3()
+      .fromBufferAttribute(tailPositions, i)
+      .sub(center)
+      .multiplyScalar(taper)
+      .add(center);
+    tailPositions.setXYZ(i, p.x, p.y, p.z);
+  }
+}
+tail.computeVertexNormals();
 const forelock = strand(
   [
     [0, 0.15, -0.035],
@@ -138,7 +190,7 @@ export default function HorseModel({
         dispose={null}
       />
       <mesh geometry={tail} material={mat(hair)} castShadow dispose={null} />
-      <group position={[0, 0.66, 0.25]}>
+      <group position={[0, 0.66, 0.25]} scale={[1, 0.84, 1]}>
         <mesh geometry={neck} material={mat(coat)} castShadow dispose={null} />
         <mesh geometry={mane} material={mat(hair)} castShadow dispose={null} />
       </group>
@@ -153,7 +205,7 @@ export default function HorseModel({
           </group>
         ))}
       </group>
-      <group ref={headRef} position={[0, 1.32, 0.52]}>
+      <group ref={headRef} position={[0, 1.215, 0.52]}>
         <group rotation={[-0.42, 0, 0]}>
           <Round p={[0, 0, 0.035]} s={[0.145, 0.17, 0.21]} />
           <Round p={[0, -0.035, 0.205]} s={[0.115, 0.12, 0.235]} />
