@@ -244,3 +244,45 @@ test("animal calls create audio only after sound is enabled", async ({
   await tap(page, 4.85, 0.8, 0);
   expect(await page.evaluate(() => (window as any).__tones)).toBe(before);
 });
+
+test("thirsty plants recover after rain and keep their recovery on reload", async ({
+  page,
+}) => {
+  const world = initialWorld();
+  world.plants = world.plants.map((p) => ({ ...p, moisture: 0 }));
+  world.paused = true;
+  world.reduced = true;
+  await page.addInitScript((w) => {
+    if (!sessionStorage.getItem("care-fixture")) {
+      localStorage.setItem("little-living-world-v1", JSON.stringify(w));
+      sessionStorage.setItem("care-fixture", "true");
+    }
+  }, world);
+  await page.goto("/");
+  await expect(page.locator("canvas")).toBeVisible();
+  await page.screenshot({ path: "test-results/plants-thirsty.png" });
+  await page.getByRole("button", { name: "Rain", exact: true }).click();
+  await tap(page, -2.5, 0.262, -0.8);
+  await expect(page.locator(".toast")).toContainText("perk up");
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          () =>
+            JSON.parse(localStorage.getItem("little-living-world-v1")!)
+              .plants[0].moisture,
+        ),
+      { timeout: 7000 },
+    )
+    .toBeGreaterThan(0.8);
+  await page.screenshot({ path: "test-results/plants-recovered.png" });
+  await page.reload();
+  await expect(page.locator(".island-label")).toContainText("8 PLANTS");
+  expect(
+    await page.evaluate(
+      () =>
+        JSON.parse(localStorage.getItem("little-living-world-v1")!).plants[0]
+          .moisture,
+    ),
+  ).toBeGreaterThan(0.8);
+});

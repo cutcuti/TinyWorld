@@ -41,6 +41,7 @@ export function loadWorld(selected?: World["mode"]): World {
         return initialWorld(mode);
       plants.push({
         ...p,
+        moisture: bounded(p.moisture, 1) ? p.moisture : 1,
         fruit: bounded(p.fruit, 3) ? p.fruit : p.kind === "tree" ? 1 : 0,
       });
     }

@@ -25,6 +25,7 @@ import * as THREE from "three";
 import type { OrbitControls as OrbitImpl } from "three-stdlib";
 import {
   canPlant,
+  plantWilt,
   inviteAnimal,
   RADIUS,
   type Plant,
@@ -87,6 +88,11 @@ function Tree({
         : Math.sin(clock.elapsedTime * 0.7 + p.x) * 0.018;
   });
   const s = 0.18 + 0.82 * p.growth;
+  const wilt = plantWilt(p);
+  const leafColor = new THREE.Color(PALETTES[season].trees[p.hue % 3]).lerp(
+    new THREE.Color("#a8a174"),
+    wilt * 0.5,
+  );
   return (
     <group
       position={[p.x, 0.29, p.z]}
@@ -109,12 +115,14 @@ function Tree({
           [0.43, 1.38, 0.1, 0.58],
           [0.04, 1.9, -0.08, 0.5],
         ].map(([x, y, z, r], i) => (
-          <mesh key={i} position={[x, y, z]} castShadow>
+          <mesh
+            key={i}
+            position={[x, y - wilt * 0.2, z]}
+            scale={[1, 1 - wilt * 0.23, 1]}
+            castShadow
+          >
             <icosahedronGeometry args={[r, 2]} />
-            <meshStandardMaterial
-              color={PALETTES[season].trees[p.hue % 3]}
-              roughness={1}
-            />
+            <meshStandardMaterial color={leafColor} roughness={1} />
           </mesh>
         ))}
       </group>
@@ -125,7 +133,7 @@ function Tree({
             key={i}
             position={[
               Math.sin(i * 2.4) * 0.62,
-              1.25 + (i % 2) * 0.4,
+              1.25 + (i % 2) * 0.4 - wilt * 0.2,
               Math.cos(i * 2.4) * 0.6,
             ]}
           >
@@ -155,6 +163,7 @@ function Tree({
   );
 }
 function Flowers({ p }: { p: Plant }) {
+  const wilt = plantWilt(p);
   return (
     <group position={[p.x, 0.28, p.z]} scale={0.15 + 0.85 * p.growth}>
       {Array.from({ length: 5 }, (_, i) => {
@@ -162,7 +171,12 @@ function Flowers({ p }: { p: Plant }) {
           z = Math.cos(i * 2.4) * 0.26,
           h = 0.28 + (i % 3) * 0.07;
         return (
-          <group key={i} position={[x, 0, z]}>
+          <group
+            key={i}
+            position={[x, 0, z]}
+            rotation={[wilt * 0.2, 0, wilt * (i % 2 ? -0.55 : 0.55)]}
+            scale={[1, 1 - wilt * 0.2, 1]}
+          >
             <mesh position={[0, h / 2, 0]}>
               <cylinderGeometry args={[0.018, 0.024, h, 5]} />
               <meshStandardMaterial color="#66825d" />
@@ -180,7 +194,9 @@ function Flowers({ p }: { p: Plant }) {
               >
                 <sphereGeometry args={[0.07, 7, 5]} />
                 <meshStandardMaterial
-                  color={["#f2c5a1", "#e8a9ac", "#f7e6ab"][p.hue % 3]}
+                  color={new THREE.Color(
+                    ["#f2c5a1", "#e8a9ac", "#f7e6ab"][p.hue % 3],
+                  ).lerp(new THREE.Color("#b7a68d"), wilt * 0.4)}
                 />
               </mesh>
             ))}

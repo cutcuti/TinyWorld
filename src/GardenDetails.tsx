@@ -1,7 +1,13 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { ISLAND_RADIUS, inWater, type Plant, type Season } from "./simulation";
+import {
+  ISLAND_RADIUS,
+  plantWilt,
+  inWater,
+  type Plant,
+  type Season,
+} from "./simulation";
 export const PALETTES = [
   {
     grass: "#92ad7a",
@@ -59,10 +65,15 @@ function Blossom({
   );
 }
 export function Lilies({ p }: { p: Plant }) {
+  const wilt = plantWilt(p);
   return (
     <group position={[p.x, 0.28, p.z]} scale={0.2 + 0.8 * p.growth}>
       {[-1, 0, 1].map((n, i) => (
-        <group key={n} position={[n * 0.2, 0, Math.sin(i * 2) * 0.15]}>
+        <group
+          key={n}
+          position={[n * 0.2, 0, Math.sin(i * 2) * 0.15]}
+          rotation={[wilt * 0.3, 0, wilt * (i % 2 ? -0.45 : 0.45)]}
+        >
           <mesh position={[0, 0.25, 0]}>
             <cylinderGeometry args={[0.016, 0.024, 0.5, 5]} />
             <meshStandardMaterial color="#65895d" />
@@ -75,7 +86,7 @@ export function Lilies({ p }: { p: Plant }) {
             <sphereGeometry args={[1, 8, 6]} />
             <meshStandardMaterial color="#779967" />
           </mesh>
-          <group position={[0, 0.5, 0]}>
+          <group position={[0, 0.5, 0]} rotation={[wilt * 0.65, 0, 0]}>
             <Blossom color={p.hue === 1 ? "#f2bbad" : "#fff2d6"} />
           </group>
         </group>

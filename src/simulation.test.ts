@@ -128,3 +128,59 @@ test("free world starts empty, accepts land and pond residents and aquatic plant
   assert.equal(canPlant([], 1.55, 0.65, "lotus"), true);
   assert.equal(canPlant([], 4, 0, "lotus"), false);
 });
+
+test("thirst is gradual and reversible without losing plants, growth or fruit", async () => {
+  const { plantWilt } = await import("./simulation");
+  let w = initialWorld();
+  const original = w.plants.map((p) => ({
+    id: p.id,
+    growth: p.growth,
+    fruit: p.fruit,
+  }));
+  for (let i = 0; i < 180; i++) w = advance(w, 1);
+  assert.ok(w.plants.every((p) => plantWilt(p) === 0));
+  for (let i = 0; i < 600; i++) w = advance(w, 1);
+  assert.ok(w.plants.every((p) => plantWilt(p) === 1));
+  assert.equal(w.plants.length, original.length);
+  for (const [i, p] of w.plants.entries()) {
+    assert.equal(p.id, original[i].id);
+    assert.equal(p.growth, original[i].growth);
+    if (p.kind === "tree") assert.ok(p.fruit! >= original[i].fruit!);
+  }
+  w = waterAt(w, w.plants[0].x, w.plants[0].z);
+  const halfway = advance(w, 1);
+  assert.ok(
+    plantWilt(halfway.plants[0]) > 0 && plantWilt(halfway.plants[0]) < 1,
+  );
+  for (let i = 0; i < 4; i++) w = advance(w, 1);
+  assert.equal(plantWilt(w.plants[0]), 0);
+  assert.equal(plantWilt(w.plants[1]), 1);
+  const pond = { ...w.plants[0], kind: "lotus" as const, moisture: 0 };
+  assert.equal(plantWilt(pond), 0);
+  assert.equal(advance({ ...w, plants: [pond] }, 1).plants[0].moisture, 1);
+});
+
+test("moisture survives saves, defaults safely for old saves, and recovery is frame independent", () => {
+  const w = initialWorld();
+  w.plants[0].moisture = 0.2;
+  let raw = JSON.stringify(w);
+  Object.defineProperty(globalThis, "localStorage", {
+    value: { getItem: () => raw },
+    configurable: true,
+  });
+  assert.equal(loadWorld().plants[0].moisture, 0.2);
+  const legacy = JSON.parse(raw);
+  delete legacy.plants[0].moisture;
+  raw = JSON.stringify(legacy);
+  assert.equal(loadWorld().plants[0].moisture, 1);
+  legacy.plants[0].moisture = -1;
+  raw = JSON.stringify(legacy);
+  assert.equal(loadWorld().plants[0].moisture, 1);
+  let fine = waterAt(w, w.plants[0].x, w.plants[0].z),
+    coarse = fine;
+  for (let i = 0; i < 12; i++) coarse = advance(coarse, 1);
+  for (let i = 0; i < 120; i++) fine = advance(fine, 0.1);
+  assert.ok(
+    Math.abs(coarse.plants[0].moisture! - fine.plants[0].moisture!) < 1e-9,
+  );
+});

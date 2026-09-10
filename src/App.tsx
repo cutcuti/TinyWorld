@@ -30,6 +30,7 @@ import Scene from "./Scene";
 import { KEY, FREE_KEY, MODE_KEY, loadWorld } from "./persistence";
 import {
   advance,
+  plantWilt,
   inviteAnimal,
   SEASONS,
   nextSeason,
@@ -250,6 +251,7 @@ export default function App() {
         kind: species,
         growth: 0,
         water: 0,
+        moisture: 1,
         hue: Math.floor(Math.random() * 3),
       };
       setWorld((previous) =>
@@ -265,6 +267,12 @@ export default function App() {
       setHint(false);
     }
     if (tool === "rain") {
+      if (
+        current.current.plants.some(
+          (p) => Math.hypot(p.x - x, p.z - z) < 1.35 && plantWilt(p) > 0.1,
+        )
+      )
+        setNotice("A little water. They'll perk up in a moment.");
       setWorld((w) => waterAt(w, x, z));
       setRain([x, z]);
       rainEnd.current = performance.now() + 2600;

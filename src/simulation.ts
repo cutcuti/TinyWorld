@@ -9,6 +9,7 @@ export type Plant = {
   kind: "tree" | "flowers" | "lilies" | "lotus";
   growth: number;
   water: number;
+  moisture?: number;
   hue: number;
   fruit?: number;
 };
@@ -79,10 +80,17 @@ export function initialWorld(mode: World["mode"] = "garden"): World {
             kind: i < 4 || i === 6 ? "tree" : "flowers",
             growth: 1,
             water: 0,
+            moisture: 1,
             hue: i % 3,
             fruit: 2,
           })),
   };
+}
+// Pond plants have a permanent water source; land plants never die.
+export function plantWilt(p: Plant) {
+  return p.kind === "lotus"
+    ? 0
+    : Math.max(0, Math.min(1, (0.45 - (p.moisture ?? 1)) / 0.45));
 }
 export function advance(w: World, dt: number): World {
   const step = Math.min(Math.max(dt, 0), 1);
@@ -96,6 +104,18 @@ export function advance(w: World, dt: number): World {
       ...p,
       growth: Math.min(1, p.growth + step * (p.water > 0 ? 0.11 : 0.012)),
       water: Math.max(0, p.water - step),
+      moisture:
+        p.kind === "lotus"
+          ? 1
+          : Math.max(
+              0,
+              Math.min(
+                1,
+                (p.moisture ?? 1) +
+                  Math.min(step, p.water) * 0.3 -
+                  Math.max(0, step - p.water) / 420,
+              ),
+            ),
       fruit:
         p.kind === "tree" && p.growth >= 1
           ? Math.min(

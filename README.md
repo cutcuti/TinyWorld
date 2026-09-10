@@ -61,7 +61,7 @@ On phones the plant submenu, time slider, seasons, sound and tools stay together
 
 The camera button exports the rendered canvas as a PNG without the interface. WebGL2 is required, with an explanatory fallback if unavailable. Pixel density is capped at 1.6 and particle populations are bounded; animal geometry and materials are shared.
 
-Plants, harvests, cooldowns, seasons, settings, and free-world resident placements save every 1.5 seconds and when leaving the page. Existing garden saves migrate automatically. Saves remain on the same browser and origin, with no cloud sync or offline growth. Clearing browser storage removes them. Animal wandering positions and bedtime animation progress restart on reload; the free-world placement layout is preserved.
+Plants, soil moisture, harvests, cooldowns, seasons, settings, and free-world resident placements save every 1.5 seconds and when leaving the page. Existing garden saves migrate automatically. Saves remain on the same browser and origin, with no cloud sync or offline growth. Clearing browser storage removes them. Animal wandering positions and bedtime animation progress restart on reload; the free-world placement layout is preserved.
 
 ## Code map
 
@@ -84,3 +84,5 @@ Tests cover growth, collections and cooldowns, seasons, save migration, free-wor
 The Three.js runtime makes the initial bundle larger than a typical static page. Creature behavior is intentionally simple. There is no feeding, breeding, multiplayer, terrain sculpting or cross-device save.
 
 On mobile, every mode uses a compact bottom dock showing the active tool and selection. Tap **Controls** for tools, seasons, time and settings; **Hide controls** keeps the current tool active. Choosing a plant, animal type or Rain collapses the menu so the island stays clear. The headline remains visible above the island.
+
+Land plants begin to look thirsty after about four minutes without water and gradually droop and soften in colour. Rain perks them up over a few seconds. They never die, disappear, lose growth or stop producing fruit. Pond lotuses stay hydrated naturally. Moisture saves locally, old saves start hydrated, and time away does not cause catch-up wilting.
