@@ -88,3 +88,5 @@ On mobile, every mode uses a compact bottom dock showing the active tool and sel
 Land plants begin to look thirsty after about four minutes without water and gradually droop and soften in colour. Rain perks them up over a few seconds. They never die, disappear, lose growth or stop producing fruit. Pond lotuses stay hydrated naturally. Moisture saves locally, old saves start hydrated, and time away does not cause catch-up wilting.
 
 Ten mature, healthy plants invite occasional tiny visitors. Birds land on tree crowns during the day; snails cross leaves beside plants. Small groups of fireflies visit from dusk through the night. Snails and fireflies rest in winter. Visits last about 22–28 seconds, with randomized quiet gaps; Less motion keeps visitors still. These guests do not consume resources or block clicks, and visit timing restarts on reload.
+
+A small secret: tap the same rock ten times in Explore to meet a distinguished pebble. It wears a top hat for eight seconds, then rests for twenty seconds before taps count again. Less motion keeps it still. Rock surprises do not change your saved garden.

@@ -286,3 +286,24 @@ test("thirsty plants recover after rain and keep their recovery on reload", asyn
     ),
   ).toBeGreaterThan(0.8);
 });
+
+test("a rock surprises on its tenth Explore tap, then rests", async ({
+  page,
+}) => {
+  test.setTimeout(30000);
+  await ready(page);
+  const surprise = page.getByText("A distinguished pebble.", { exact: true });
+  // The east pond stone is accessible without another animal in front of it.
+  const stone = await spot(page, 3.12, 0.39, 0.65);
+  for (let i = 0; i < 9; i++) await page.mouse.click(stone.x, stone.y);
+  await expect(surprise).toHaveCount(0);
+  await page.mouse.click(stone.x, stone.y);
+  await expect(surprise).toBeVisible();
+  await page.screenshot({ path: "test-results/pebble-surprise.png" });
+  await expect(surprise).toHaveCount(0, { timeout: 11000 });
+  for (let i = 0; i < 10; i++) await page.mouse.click(stone.x, stone.y);
+  await expect(surprise).toHaveCount(0);
+  await page.getByRole("button", { name: "Plant", exact: true }).click();
+  for (let i = 0; i < 10; i++) await page.mouse.click(stone.x, stone.y);
+  await expect(surprise).toHaveCount(0);
+});

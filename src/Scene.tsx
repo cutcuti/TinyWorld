@@ -9,7 +9,7 @@ import {
 import type { Species } from "./wildlife";
 import Animals from "./Animals";
 import Visitors from "./CritterVisitors";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Canvas,
   useFrame,
@@ -17,6 +17,8 @@ import {
   type ThreeEvent,
 } from "@react-three/fiber";
 import {
+  Billboard,
+  Html,
   OrbitControls,
   ContactShadows,
   Sparkles,
@@ -52,20 +54,102 @@ function Pebble({
   position,
   scale = 1,
   color = "#91a6a0",
+  tool,
+  reduced,
 }: {
   position: [number, number, number];
   scale?: number;
   color?: string;
+  tool: Tool;
+  reduced: boolean;
 }) {
+  const root = useRef<THREE.Group>(null);
+  const taps = useRef(0),
+    age = useRef(0),
+    cooldown = useRef(0);
+  const [awake, setAwake] = useState(false);
+  useFrame((_, dt) => {
+    if (document.hidden) return;
+    const d = Math.min(dt, 0.1);
+    cooldown.current = Math.max(0, cooldown.current - d);
+    if (awake) {
+      age.current += d;
+      if (age.current >= 8) setAwake(false);
+    }
+    if (root.current) {
+      const target = scale * (awake ? 1.65 : 1);
+      const size = reduced
+        ? target
+        : THREE.MathUtils.lerp(
+            root.current.scale.x,
+            target,
+            1 - Math.exp(-d * 7),
+          );
+      root.current.scale.setScalar(size);
+      root.current.rotation.z =
+        awake && !reduced ? Math.sin(age.current * 3) * 0.12 : 0;
+    }
+  });
   return (
-    <mesh
+    <group
+      ref={root}
       position={position}
-      scale={[scale, scale * 0.7, scale * 0.8]}
-      castShadow
+      scale={scale}
+      onClick={(e) => {
+        if (tool !== "explore" || e.delta > 6) return;
+        e.stopPropagation();
+        if (awake || cooldown.current > 0) return;
+        taps.current++;
+        if (taps.current === 10) {
+          taps.current = 0;
+          age.current = 0;
+          cooldown.current = 28;
+          setAwake(true);
+        }
+      }}
     >
-      <dodecahedronGeometry args={[1, 0]} />
-      <meshStandardMaterial color={color} roughness={0.9} />
-    </mesh>
+      <mesh scale={[1, 0.7, 0.8]} castShadow>
+        <dodecahedronGeometry args={[1, 0]} />
+        <meshStandardMaterial color={color} roughness={0.9} />
+      </mesh>
+      {awake && (
+        <Billboard lockX lockZ>
+          {[-1, 1].map((sign) => (
+            <group key={sign} position={[sign * 0.3, 0.25, 0.74]}>
+              <mesh scale={[0.2, 0.22, 0.09]}>
+                <sphereGeometry args={[1, 12, 8]} />
+                <meshStandardMaterial color="#f8f0db" />
+              </mesh>
+              <mesh position={[0, 0, 0.08]} scale={[0.085, 0.11, 0.04]}>
+                <sphereGeometry args={[1, 10, 8]} />
+                <meshStandardMaterial color="#293c37" />
+              </mesh>
+            </group>
+          ))}
+          <mesh position={[0, -0.05, 0.8]} rotation={[0, 0, Math.PI]}>
+            <torusGeometry args={[0.2, 0.035, 6, 20, Math.PI]} />
+            <meshStandardMaterial color="#293c37" />
+          </mesh>
+          <group position={[0, 0.65, 0]} rotation={[0, 0, -0.12]}>
+            <mesh>
+              <cylinderGeometry args={[0.78, 0.78, 0.09, 16]} />
+              <meshStandardMaterial color="#3f4a54" />
+            </mesh>
+            <mesh position={[0, 0.36, 0]}>
+              <cylinderGeometry args={[0.47, 0.5, 0.68, 16]} />
+              <meshStandardMaterial color="#3f4a54" />
+            </mesh>
+            <mesh position={[0, 0.12, 0]}>
+              <cylinderGeometry args={[0.51, 0.51, 0.15, 16]} />
+              <meshStandardMaterial color="#d4ac83" />
+            </mesh>
+          </group>
+          <Html center position={[0, 2.2, 0]} style={{ pointerEvents: "none" }}>
+            <span className="animal-label">A distinguished pebble.</span>
+          </Html>
+        </Billboard>
+      )}
+    </group>
   );
 }
 function Tree({
@@ -486,7 +570,9 @@ function Content(props: Props) {
           const a = (i / 15) * Math.PI * 2;
           return (
             <Pebble
-              key={i}
+              tool={tool}
+              reduced={world.reduced}
+              key={`${world.mode}-${i}`}
               position={[
                 1.55 + Math.cos(a) * 1.57,
                 0.32,
@@ -501,7 +587,9 @@ function Content(props: Props) {
           const a = i * 2.4;
           return (
             <Pebble
-              key={i}
+              tool={tool}
+              reduced={world.reduced}
+              key={`${world.mode}-${i}`}
               position={[Math.sin(a) * 5.78, 0.2, Math.cos(a) * 5.78]}
               scale={0.12 + (i % 4) * 0.08}
               color={i % 2 ? "#a5b08e" : "#839681"}
