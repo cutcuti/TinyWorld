@@ -1,6 +1,7 @@
 import { Color } from "three";
 import { PALETTES } from "./GardenDetails";
 import { enableAudio, animalSound } from "./audio";
+import { enableAmbience, setAmbienceTime } from "./ambience";
 import type { Species } from "./wildlife";
 import { Component, useEffect, useRef, useState, type ReactNode } from "react";
 import {
@@ -21,6 +22,7 @@ import {
   Leaf,
   Volume2,
   VolumeX,
+  Wind,
   ShoppingBasket,
   PawPrint,
   SlidersHorizontal,
@@ -115,13 +117,25 @@ export default function App() {
   const [notice, setNotice] = useState("");
   const [saved, setSaved] = useState(true);
   const [sound, setSound] = useState(false);
+  const [ambience, setAmbience] = useState(false);
+  const [ambienceLoading, setAmbienceLoading] = useState(false);
+  useEffect(() => setAmbienceTime(world.time), [world.time]);
   const [rainbow, setRainbow] = useState(false);
   useEffect(
     () => () => {
       void enableAudio(false);
+      void enableAmbience(false);
     },
     [],
   );
+  async function toggleAmbience() {
+    setAmbienceLoading(true);
+    const next = !ambience;
+    const ok = await enableAmbience(next);
+    setAmbience(next && ok);
+    setAmbienceLoading(false);
+    if (next && !ok) setNotice("The soundscape could not start. Tap to try again.");
+  }
   async function toggleSound() {
     const next = !sound;
     const ok = await enableAudio(next);
@@ -455,6 +469,16 @@ export default function App() {
             >
               {sound ? <Volume2 size={18} /> : <VolumeX size={18} />}
               <span>{sound ? "Sound on" : "Sound off"}</span>
+            </button>
+            <button
+              className="sound-button ambience-button"
+              aria-label={ambience ? "Mute ambient soundscape" : "Enable ambient soundscape"}
+              title="Wind, water and birds"
+              aria-pressed={ambience}
+              disabled={ambienceLoading}
+              onClick={toggleAmbience}
+            >
+              <Wind size={18} />
             </button>
           </div>
           <div className="tool-area">

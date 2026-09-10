@@ -307,3 +307,54 @@ test("a rock surprises on its tenth Explore tap, then rests", async ({
   for (let i = 0; i < 10; i++) await page.mouse.click(stone.x, stone.y);
   await expect(surprise).toHaveCount(0);
 });
+
+test("soundscape is opt-in, independent, and pauses in a hidden tab", async ({ page }) => {
+  await page.addInitScript(() => {
+    (window as any).__ambientSources = [];
+    const original = AudioContext.prototype.createBufferSource;
+    AudioContext.prototype.createBufferSource = function () {
+      const source = original.call(this);
+      const start = source.start.bind(source);
+      const stop = source.stop.bind(source);
+      const record = { loop: false, stopped: false, context: this };
+      source.start = (when?: number) => {
+        record.loop = source.loop;
+        (window as any).__ambientSources.push(record);
+        start(when);
+      };
+      source.stop = (when?: number) => { record.stopped = true; stop(when); };
+      return source;
+    };
+  });
+  await ready(page);
+  expect(await page.evaluate(() => (window as any).__ambientSources.length)).toBe(0);
+  await page.getByRole('button', { name: 'Enable ambient soundscape' }).click();
+  const mute = page.getByRole('button', { name: 'Mute ambient soundscape' });
+  await expect(mute).toHaveAttribute('aria-pressed', 'true');
+  const loops = () => page.evaluate(() => (window as any).__ambientSources.filter((s: any) => s.loop && !s.stopped).length);
+  await expect.poll(loops).toBe(2);
+  await page.getByRole('button', { name: 'Enable animal sounds' }).click();
+  await page.getByRole('button', { name: 'Mute animal sounds' }).click();
+  expect(await loops()).toBe(2);
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'hidden', { configurable: true, value: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await expect.poll(() => page.evaluate(() => (window as any).__ambientSources[0].context.state)).toBe('suspended');
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'hidden', { configurable: true, value: false });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await expect.poll(() => page.evaluate(() => (window as any).__ambientSources[0].context.state)).toBe('running');
+  await mute.click();
+  await expect.poll(loops).toBe(0);
+  await page.getByRole('button', { name: 'Enable ambient soundscape' }).click();
+  await expect.poll(loops).toBe(2);
+  await page.setViewportSize({ width: 320, height: 740 });
+  await page.getByRole('button', { name: 'Open garden controls' }).click();
+  await expect(mute).toBeInViewport();
+  const ambient = await mute.boundingBox();
+  const clock = await page.locator('.time-panel').boundingBox();
+  expect(ambient!.x + ambient!.width).toBeLessThanOrEqual(clock!.x);
+  await page.screenshot({ path: 'test-results/mobile-ambience.png' });
+});

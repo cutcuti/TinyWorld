@@ -14,3 +14,12 @@ Edits: short mono excerpts at 22.05 kHz, gentle low-pass filtering, peak normali
 | horse.wav | https://bigsoundbank.com/horse-neighing-3-s0863.html | Joseph SARDIN | 0.08–3.13 |
 | dog.wav | https://bigsoundbank.com/barking-of-a-spitz-s0682.html | Joseph SARDIN | 0.55–1.33 |
 | duck.wav | https://bigsoundbank.com/ducks-s0276.html | DenisChardonnet | 0.2–1.5 |
+
+## Ambient soundscape
+
+| File | Original | Author | Edits |
+| --- | --- | --- | --- |
+| ambient-stream.wav | https://bigsoundbank.com/small-stream-s0823.html | Joseph SARDIN | 5–22 second excerpt, one-second loop crossfade, mono 22.05 kHz, peak normalized |
+| ambient-bird.wav | https://bigsoundbank.com/common-blackbird-30-s3503.html | Le tiroir du fond | Mono 22.05 kHz, short edge fades, peak normalized |
+
+Both recordings are CC0. The soft wind is generated locally with filtered noise.
