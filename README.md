@@ -43,6 +43,8 @@ The garden has three chickens, two cows, two goats, two sheep, one horse, two do
 
 The season button advances only in order: **Spring → Summer → Autumn → Winter → Spring**. Blossom colors and fresh grass give way to summer greens, autumn foliage and fallen leaves, then snowy trees, ground and falling snow. The pond remains open for ducks. Season choice is saved.
 
+Spring also brings six pastel Easter eggs and two little rabbit visitors to the original garden. Rabbits take gentle hops with pauses to sniff, and retreat at bedtime; Less motion keeps them still. They leave when the season changes. Free world stays bare for you to build.
+
 The time slider controls daylight. Pause holds the clock while plants and creature behavior continue. A full day lasts roughly six minutes.
 
 ## Cloud bedrooms
