@@ -82,14 +82,16 @@ export default function App() {
     tool === "plant"
       ? `Plant · ${{ tree: "Trees", flowers: "Flowers", lilies: "Lilies", lotus: "Lotus" }[species]}`
       : tool === "animal"
-        ? `Add · ${animalSpecies}`
+        ? (world.mode === "free" ? `Add · ${animalSpecies}` : "Animals")
+        : tool === "treat"
+          ? "Share a treat"
         : tool === "rain"
           ? "Rain"
           : "Explore";
   const ActiveToolIcon =
     tool === "plant"
       ? Sprout
-      : tool === "animal"
+      : tool === "animal" || tool === "treat"
         ? PawPrint
         : tool === "rain"
           ? CloudRain
@@ -242,7 +244,7 @@ export default function App() {
     );
   }
   function act(x: number, z: number) {
-    if (tool === "animal") {
+    if (tool === "animal" && current.current.mode === "free") {
       const result = inviteAnimal(current.current, animalSpecies, x, z);
       current.current = result.world;
       setWorld(result.world);
@@ -486,8 +488,10 @@ export default function App() {
             <div className="mode-help">
               {tool === "explore"
                 ? "Tap animals or fruit trees to say hello and collect."
+                : tool === "treat"
+                  ? "Tap an awake animal to share a treat. Just because."
                 : tool === "animal"
-                  ? "Choose a neighbor, then tap a spot for them."
+                  ? (world.mode === "free" ? "Invite a neighbor, or share a little treat." : "A little moment together. Treats are always here.")
                   : tool === "plant"
                     ? "Tap grass to plant. Lotuses belong in the pond."
                     : "Tap the garden to make a little rain."}
@@ -530,6 +534,12 @@ export default function App() {
                 >
                   <Flower2 size={15} /> Lotus
                 </button>
+              </div>
+            )}
+            {(tool === "animal" || tool === "treat") && (
+              <div className="animal-picker">
+                <button aria-pressed={tool === "treat"} onClick={() => { setTool("treat"); setCursor(null); setControlsOpen(false); }}>Share a treat ♡</button>
+                {world.mode === "free" && <button aria-pressed={tool === "animal"} onClick={() => setTool("animal")}>Invite a neighbor</button>}
               </div>
             )}
             {world.mode === "free" && tool === "animal" && (
@@ -581,10 +591,10 @@ export default function App() {
                   <span>{label}</span>
                 </button>
               ))}
-              {world.mode === "free" && (
+              {(
                 <button
-                  aria-pressed={tool === "animal"}
-                  onClick={() => setTool("animal")}
+                  aria-pressed={tool === "animal" || tool === "treat"}
+                  onClick={() => { setTool("animal"); setControlsOpen(true); }}
                 >
                   <PawPrint size={21} />
                   <span>Animals</span>

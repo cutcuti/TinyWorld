@@ -515,7 +515,7 @@ function Content(props: Props) {
                 : null;
           }}
           onPointerMove={(e) => {
-            if (tool !== "explore") setCursor(hit(e));
+            if (tool !== "explore" && tool !== "treat") setCursor(hit(e));
           }}
           onPointerUp={(e) => {
             pointers.current.delete(e.pointerId);
@@ -611,9 +611,9 @@ function Content(props: Props) {
         />
         {world.mode !== "free" && <PondFlowers season={world.season} />}
         <Visitors world={world} key={world.mode} />
-        <SpringVisitors world={world} />
-        <WinterVisitors world={world} />
-        <AutumnVisitors world={world} />
+        <SpringVisitors world={world} tool={tool} />
+        <WinterVisitors world={world} tool={tool} />
+        <AutumnVisitors world={world} tool={tool} />
         <SeasonParticles season={world.season} reduced={world.reduced} />
         <Rainbow show={rainbow && world.season !== 3} reduced={world.reduced} />
         {world.plants.map((p) =>
@@ -663,7 +663,7 @@ function Content(props: Props) {
             .map((p, i) => (
               <Butterfly key={p.id} p={p} index={i} reduced={world.reduced} />
             ))}
-        {cursor && tool !== "explore" && (
+        {cursor && tool !== "explore" && tool !== "treat" && (
           <mesh
             position={[cursor[0], 0.3, cursor[1]]}
             rotation={[-Math.PI / 2, 0, 0]}

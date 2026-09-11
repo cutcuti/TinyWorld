@@ -1,3 +1,5 @@
+import { useTreat } from "./treats";
+import type { Tool } from "./simulation";
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Group, SphereGeometry } from "three";
@@ -8,7 +10,7 @@ const sphere = new SphereGeometry(1, 20, 14);
 function Round({ p, s, color, rotation }: {
   p: Vec; s: Vec; color: string; rotation?: Vec;
 }) {
-  return <mesh position={p} scale={s} rotation={rotation} geometry={sphere} dispose={null} castShadow raycast={() => {}}>
+  return <mesh position={p} scale={s} rotation={rotation} geometry={sphere} dispose={null} castShadow >
     <meshStandardMaterial color={color} roughness={0.95} />
   </mesh>;
 }
@@ -20,15 +22,16 @@ function Acorn({ position = [0, 0, 0] }: { position?: Vec }) {
   </group>;
 }
 const smooth = (t: number) => t * t * (3 - 2 * t);
-function Squirrel({ world, position, russet, delay }: {
+function Squirrel({ tool, world, position, russet, delay }: { tool: Tool;
   world: World; position: Vec; russet: boolean; delay: number;
 }) {
+  const treat = useTreat(tool, world.time >= 6 && world.time < 19, "Squirrel", 1);
   const root = useRef<Group>(null), paws = useRef<Group>(null), head = useRef<Group>(null);
   const age = useRef(delay);
   const daylight = Math.min(1, Math.max(0, (world.time - 6) * 2), Math.max(0, (19 - world.time) * 2));
   useFrame((_, dt) => {
     if (!root.current || document.hidden) return;
-    if (!world.reduced) age.current += Math.min(dt, 0.05);
+    if (!world.reduced && treat.left.current <= 0) age.current += Math.min(dt, 0.05);
     const t = age.current % 16;
     // Travel, sit and nibble, then turn slowly before the return trip.
     const moving = t < 3 || (t >= 8 && t < 11);
@@ -39,13 +42,14 @@ function Squirrel({ world, position, russet, delay }: {
       root.current.position.set(position[0] + progress * 0.85, position[1] + bob, position[2]);
       root.current.rotation.y = Math.PI / 2 + turn * Math.PI;
     }
-    const nibble = !world.reduced && !moving ? Math.sin(t * 4) * 0.012 : 0;
+    const nibble = !world.reduced && (!moving || treat.left.current > 0) ? Math.sin((t + 4 - treat.left.current) * 4) * 0.012 : 0;
     if (paws.current) paws.current.position.y = nibble;
     if (head.current) head.current.rotation.x = nibble * 2;
   });
   const fur = russet ? "#b5764d" : "#a28c76";
   const tail = russet ? "#a76640" : "#8e7965";
-  return <group ref={root} position={position} rotation={[0, 0.8, 0]} scale={daylight} name="autumn-squirrel">
+  return <group ref={root} position={position} rotation={[0, 0.8, 0]} scale={daylight} name="autumn-squirrel" onClick={treat.onClick}>
+    {treat.feedback}
     <Round p={[0, 0.24, -0.03]} s={[0.155, 0.24, 0.18]} color={fur} />
     <Round p={[0, 0.24, 0.105]} s={[0.11, 0.16, 0.075]} color="#e5ceb0" />
     <group rotation={[-0.17, 0, 0]}>
@@ -72,11 +76,11 @@ function Squirrel({ world, position, russet, delay }: {
     </group>
   </group>;
 }
-export default function AutumnVisitors({ world }: { world: World }) {
+export default function AutumnVisitors({ world, tool }: { world: World; tool: Tool }) {
   if (world.season !== 2 || world.mode === "free") return null;
   return <group name="autumn-visitors">
-    <Squirrel world={world} position={[-2.5, 0.27, 3.3]} russet delay={0} />
-    <Squirrel world={world} position={[2.65, 0.27, 2.9]} russet={false} delay={4} />
+    <Squirrel tool={tool} world={world} position={[-2.5, 0.27, 3.3]} russet delay={0} />
+    <Squirrel tool={tool} world={world} position={[2.65, 0.27, 2.9]} russet={false} delay={4} />
     <Acorn position={[-2.8, 0.34, 3.05]} />
     <Acorn position={[-2.62, 0.34, 2.95]} />
     <Acorn position={[3.35, 0.34, 3.15]} />

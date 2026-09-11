@@ -1,3 +1,5 @@
+import { useTreat } from "./treats";
+import type { Tool } from "./simulation";
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Group, SphereGeometry } from "three";
@@ -14,18 +16,21 @@ for (let i = 0; i < vertices.count; i++) {
 egg.computeVertexNormals();
 type Vec = [number, number, number];
 function Soft({ p = [0, 0, 0], s, color }: { p?: Vec; s: Vec; color: string }) {
-  return <mesh position={p} scale={s} geometry={sphere} dispose={null} castShadow raycast={() => {}}>
+  return <mesh position={p} scale={s} geometry={sphere} dispose={null} castShadow >
     <meshStandardMaterial color={color} roughness={0.9} />
   </mesh>;
 }
-function Rabbit({ position, cream, reduced, time }: { position: Vec; cream: boolean; reduced: boolean; time: number }) {
+function Rabbit({ tool, position, cream, reduced, time }: { tool: Tool; position: Vec; cream: boolean; reduced: boolean; time: number }) {
+  const treat = useTreat(tool, time >= 6 && time < 19, "Rabbit", 1);
   const root = useRef<Group>(null);
   const age = useRef(0);
+  const nose = useRef<Group>(null);
   // These shy visitors come out with the morning light and retreat at bedtime.
   const daylight = Math.min(1, Math.max(0, (time - 6) * 2), Math.max(0, (19 - time) * 2));
   useFrame((_, dt) => {
     if (!root.current || document.hidden) return;
-    if (!reduced) age.current += Math.min(dt, 0.05);
+    if (!reduced && treat.left.current <= 0) age.current += Math.min(dt, 0.05);
+    if (nose.current) nose.current.scale.setScalar(!reduced && treat.left.current > 0 ? 1 + Math.sin(treat.left.current * 8) * 0.12 : 1);
     const t = age.current % 12;
     // Two little hops, followed by a long pause to sniff the flowers.
     const progress = reduced ? 0 : t < 3 ? t / 3 : t < 6 ? 1 : t < 9 ? 1 - (t - 6) / 3 : 0;
@@ -36,7 +41,8 @@ function Rabbit({ position, cream, reduced, time }: { position: Vec; cream: bool
     root.current.rotation.y = reduced ? 0.7 : turn;
   });
   const fur = cream ? "#e4ceb0" : "#eee8dc";
-  return <group ref={root} position={position} scale={daylight} name="spring-rabbit">
+  return <group ref={root} position={position} scale={daylight} name="spring-rabbit" onClick={treat.onClick}>
+    {treat.feedback}
     <Soft p={[0, 0.23, -0.05]} s={[0.2, 0.23, 0.29]} color={fur} />
     <Soft p={[0, 0.43, 0.16]} s={[0.17, 0.16, 0.16]} color={fur} />
     <Soft p={[0, 0.24, -0.33]} s={[0.11, 0.11, 0.1]} color="#fff7e9" />
@@ -49,7 +55,7 @@ function Rabbit({ position, cream, reduced, time }: { position: Vec; cream: bool
       <Soft p={[sign * 0.135, 0.465, 0.23]} s={[0.022, 0.027, 0.018]} color="#34352e" />
       <Soft p={[sign * 0.052, 0.39, 0.29]} s={[0.057, 0.043, 0.034]} color="#fff7ed" />
     </group>)}
-    <Soft p={[0, 0.415, 0.315]} s={[0.026, 0.021, 0.018]} color="#c28d8e" />
+    <group ref={nose} position={[0, 0.415, 0.315]}><Soft p={[0, 0, 0]} s={[0.026, 0.021, 0.018]} color="#c28d8e" /></group>
   </group>;
 }
 const eggs: { p: Vec; color: string; tilt: number }[] = [
@@ -60,23 +66,23 @@ const eggs: { p: Vec; color: string; tilt: number }[] = [
   { p: [-4.1, 0.45, -1.8], color: "#a8cbbb", tilt: 0.1 },
   { p: [3.4, 0.45, -2.8], color: "#e5b391", tilt: -0.25 },
 ];
-export default function SpringVisitors({ world }: { world: World }) {
+export default function SpringVisitors({ world, tool }: { world: World; tool: Tool }) {
   if (world.season !== 0 || world.mode === "free") return null;
   return <group name="spring-visitors">
     {eggs.map(({ p, color, tilt }, i) => <group key={i} position={p} rotation={[0, i, tilt]} name="spring-egg">
-      <mesh geometry={egg} scale={[0.145, 0.21, 0.145]} castShadow dispose={null} raycast={() => {}}>
+      <mesh geometry={egg} scale={[0.145, 0.21, 0.145]} castShadow dispose={null} >
         <meshStandardMaterial color={color} roughness={0.75} />
       </mesh>
       {Array.from({ length: 7 }, (_, j) => {
         const angle = j / 7 * Math.PI * 2;
         return <Soft key={j} p={[Math.sin(angle) * 0.144, 0, Math.cos(angle) * 0.144]} s={[0.025, 0.027, 0.025]} color="#fff6df" />;
       })}
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -0.075, 0]} raycast={() => {}}>
+      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -0.075, 0]} >
         <torusGeometry args={[0.143, 0.012, 6, 28]} />
         <meshStandardMaterial color="#fff6df" />
       </mesh>
     </group>)}
-    <Rabbit position={[-1.7, 0.27, 3.35]} cream={false} reduced={world.reduced} time={world.time} />
-    <Rabbit position={[2.8, 0.27, 2.65]} cream reduced={world.reduced} time={world.time} />
+    <Rabbit tool={tool} position={[-1.7, 0.27, 3.35]} cream={false} reduced={world.reduced} time={world.time} />
+    <Rabbit tool={tool} position={[2.8, 0.27, 2.65]} cream reduced={world.reduced} time={world.time} />
   </group>;
 }

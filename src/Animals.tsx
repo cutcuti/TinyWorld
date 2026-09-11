@@ -1,8 +1,9 @@
+import { useTreat } from "./treats";
 import HorseModel from "./HorseModel";
 import { stepRest, createRest } from "./rest";
 import { animalSound } from "./audio";
 import { useEffect, useRef, useState } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import {
@@ -12,7 +13,7 @@ import {
   type Animal,
   type Species,
 } from "./wildlife";
-import type { Plant, Tool } from "./simulation";
+import { inWater, type Plant, type Tool } from "./simulation";
 const sphere = new THREE.SphereGeometry(1, 12, 8);
 const cone = new THREE.ConeGeometry(1, 1, 8);
 const materials = new Map<string, THREE.MeshStandardMaterial>();
@@ -80,6 +81,9 @@ function Creature({
   const root = useRef<THREE.Group>(null),
     head = useRef<THREE.Group>(null),
     legs = useRef<THREE.Group>(null);
+  const { camera } = useThree();
+  const approach = useRef<{ x: number; z: number; dx: number; dz: number } | null>(null);
+  const tail = useRef<THREE.Group>(null);
   const [hover, setHover] = useState(false);
   const kind = animal.species,
     chicken = kind === "chicken",
@@ -112,11 +116,25 @@ function Creature({
           : dog
             ? 0.7
             : 0.85;
+  const treat = useTreat(tool, !night && animal.rest.stage === "awake", names[kind], 1.7);
   const badge = useRef<THREE.Group>(null);
   const clicked = useRef(0);
   useFrame((_, dt) => {
     const resting = stepRest(animal, dt, time, reduced, all, plants);
-    if (!resting) stepAnimal(animal, dt, plants, all, night, reduced);
+    if (!resting && treat.left.current <= 0) stepAnimal(animal, dt, plants, all, night, reduced);
+    else if (treat.left.current > 0) {
+      const p = approach.current;
+      const travel = reduced ? 1 : Math.min(1, (4 - treat.left.current) / 0.9);
+      if (p && !reduced) {
+        const eased = travel * travel * (3 - 2 * travel);
+        animal.x = p.x + p.dx * eased;
+        animal.z = p.z + p.dz * eased;
+      }
+      animal.moving = !reduced && travel < 1;
+      animal.chaseLeft = 0;
+      animal.scared = false;
+      animal.phase += Math.min(dt, 0.1);
+    }
     if (!root.current) return;
     if (badge.current)
       badge.current.visible =
@@ -148,6 +166,7 @@ function Creature({
         Math.sin(target - root.current.rotation.y),
         Math.cos(target - root.current.rotation.y),
       ) * Math.min(1, dt * 5);
+    if (tail.current) tail.current.rotation.z = !reduced && treat.left.current > 0 ? Math.sin(animal.phase * 9) * 0.35 : 0;
     const t = animal.phase;
     root.current.position.y += reduced
       ? 0
@@ -158,6 +177,8 @@ function Creature({
     if (head.current) {
       const tilt = reduced
         ? 0
+        : treat.left.current > 0
+          ? 0.24 + Math.sin(animal.phase * 5) * 0.045
         : night
           ? 0.3
           : !animal.moving
@@ -187,6 +208,19 @@ function Creature({
       }}
       onPointerOut={() => setHover(false)}
       onClick={(e) => {
+        if (tool === "treat") {
+          const fresh = treat.left.current === 0;
+          treat.onClick(e);
+          if (fresh && treat.left.current > 0) {
+            const heading = Math.atan2(camera.position.x - animal.x, camera.position.z - animal.z);
+            let dx = Math.sin(heading) * 0.25, dz = Math.cos(heading) * 0.25;
+            const x = animal.x + dx, z = animal.z + dz;
+            if (Math.hypot(x, z) > 5.4 || inWater(x, z) !== duck || plants.some(p => Math.hypot(x - p.x, z - p.z) < 0.7)) { dx = 0; dz = 0; }
+            approach.current = { x: animal.x, z: animal.z, dx, dz };
+            animal.heading = heading;
+          }
+          return;
+        }
         if (tool !== "explore" || e.delta > 6) return;
         e.stopPropagation();
         startChase(animal);
@@ -194,6 +228,7 @@ function Creature({
         onAnimal(animal.id, animal.species);
       }}
     >
+      {treat.feedback}
       <group ref={badge} position={[0, 1.55, 0]} visible={false}>
         <Part
           p={[0, 0, 0]}
@@ -232,12 +267,12 @@ function Creature({
         <>
           {dog && (
             <>
-              <Part
-                p={[0, 0.72, -0.48]}
+              <group ref={tail} position={[0, 0.55, -0.48]}><Part
+                p={[0, 0.17, 0]}
                 s={[0.055, 0.25, 0.06]}
                 c={fur}
                 rotation={[0.7, 0, 0]}
-              />
+              /></group>
               <Part p={[0, 0.69, 0.3]} s={[0.25, 0.045, 0.23]} c="#5b827b" />
             </>
           )}

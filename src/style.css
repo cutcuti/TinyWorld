@@ -1408,3 +1408,11 @@ footer > div {
   .season-button { padding: 10px 3px; gap: 3px; font-size: 11px; }
   .season-controls .sound-button { padding: 10px 4px; }
 }
+
+.animal-picker button {
+  border: 0; border-radius: 12px; padding: 8px 12px;
+  background: transparent; color: inherit; font: inherit; cursor: pointer;
+}
+.animal-picker button[aria-pressed="true"] { background: #dbe5d3; color: #253e36; }
+.treat-label { white-space: nowrap; }
+.treat-label span { color: #bd6c76; }

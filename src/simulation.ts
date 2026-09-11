@@ -1,5 +1,5 @@
 import type { Species } from "./wildlife";
-export type Tool = "explore" | "plant" | "rain" | "animal";
+export type Tool = "explore" | "plant" | "rain" | "animal" | "treat";
 export const SEASONS = ["Spring", "Summer", "Autumn", "Winter"] as const;
 export type Season = 0 | 1 | 2 | 3;
 export type Plant = {

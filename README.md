@@ -31,6 +31,8 @@ Drag to orbit; scroll or pinch to zoom. The circular arrow resets the camera. In
 - **Dogs:** trigger ten seconds of playful chasing. Chickens, cows, goats and sheep scatter, ducks paddle faster, and the horse stays calm. Chasing stays bounded within the island.
 - **Other animals:** say hello and hear their call when sound is enabled.
 
+**Animals → Share a treat** offers unlimited little treats to awake animals, including seasonal rabbits, reindeer and squirrels. Tap an animal for a short nibble; dogs wag instead of chasing. There is no hunger, inventory cost, reward, reminder or saved feeding state. Sleeping animals keep resting. Choose Explore to return to normal collecting. On mobile the controls collapse after choosing treats.
+
 The harvest basket saves locally. **Sound** is off on each page load; enable it to hear short animal recordings on clicks and occasional quieter calls during the day. Calls use a gentle pitch lift, small variations and softened volume. Muting stops current calls; background tabs are quiet. Sources and CC0 license details are in [audio credits](public/audio/CREDITS.md).
 
 The **wind button** enables a separate ambient soundscape: a soft breeze, looping recorded water, and occasional blackbird phrases between 06:00 and 19:00. It starts off, fades in and out, and pauses while the tab is hidden. Animal sounds can remain muted. Recordings load only when enabled.

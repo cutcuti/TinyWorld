@@ -358,3 +358,32 @@ test("soundscape is opt-in, independent, and pauses in a hidden tab", async ({ p
   expect(ambient!.x + ambient!.width).toBeLessThanOrEqual(clock!.x);
   await page.screenshot({ path: 'test-results/mobile-ambience.png' });
 });
+
+test("sharing treats is optional, repeatable, and does not spend or collect harvest", async ({ page }) => {
+  await ready(page);
+  const basket = await page.locator('.basket').innerText();
+  await page.getByRole('button', { name: 'Animals', exact: true }).click();
+  await page.getByRole('button', { name: 'Share a treat' }).click();
+  await tap(page, 4.85, 0.8, 0);
+  await expect(page.getByLabel('Cow enjoys a treat')).toBeVisible();
+  expect(await page.locator('.basket').innerText()).toBe(basket);
+  await expect(page.getByLabel('Cow enjoys a treat')).toBeHidden({ timeout: 6500 });
+  await tap(page, 4.85, 0.8, 0);
+  await expect(page.getByLabel('Cow enjoys a treat')).toBeVisible();
+  await tap(page, -4.2, 0.65, 2.425);
+  await expect(page.getByLabel('Dog enjoys a treat')).toBeVisible();
+  await expect(page.locator('.toast')).not.toContainText('Zoomies');
+  await tap(page, -1.7, 0.65, 3.35);
+  await expect(page.getByLabel('Rabbit enjoys a treat')).toBeVisible();
+  expect(await page.locator('.basket').innerText()).toBe(basket);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: 'test-results/share-treat-mobile.png' });
+  await page.getByRole('button', { name: 'Open garden controls' }).click();
+  await page.getByRole('slider').fill('22');
+  await expect(page.getByLabel('Cow enjoys a treat')).toBeHidden();
+  await page.getByRole('button', { name: 'Explore', exact: true }).click();
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByRole('slider').fill('10');
+  await tap(page, 4.85, 0.8, 0);
+  await expect(page.getByLabel('1 milk', { exact: true })).toBeVisible();
+});
