@@ -45,6 +45,8 @@ The season button advances only in order: **Spring → Summer → Autumn → Win
 
 Spring also brings six pastel Easter eggs and two little rabbit visitors to the original garden. Rabbits take gentle hops with pauses to sniff, and retreat at bedtime; Less motion keeps them still. They leave when the season changes. Free world stays bare for you to build.
 
+Winter brings a small scarf-wearing reindeer, a snow-capped Christmas tree, warm evening lights, and two wrapped presents to the original garden. The reindeer visits during daylight and wanders gently; Less motion holds it still. These seasonal decorations do not populate Free world.
+
 The time slider controls daylight. Pause holds the clock while plants and creature behavior continue. A full day lasts roughly six minutes.
 
 ## Cloud bedrooms

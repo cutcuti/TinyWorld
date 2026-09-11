@@ -10,6 +10,7 @@ import type { Species } from "./wildlife";
 import Animals from "./Animals";
 import Visitors from "./CritterVisitors";
 import SpringVisitors from "./SpringVisitors";
+import WinterVisitors from "./WinterVisitors";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Canvas,
@@ -610,6 +611,7 @@ function Content(props: Props) {
         {world.mode !== "free" && <PondFlowers season={world.season} />}
         <Visitors world={world} key={world.mode} />
         <SpringVisitors world={world} />
+        <WinterVisitors world={world} />
         <SeasonParticles season={world.season} reduced={world.reduced} />
         <Rainbow show={rainbow && world.season !== 3} reduced={world.reduced} />
         {world.plants.map((p) =>
