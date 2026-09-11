@@ -176,10 +176,15 @@ const forelock = strand(
 export default function HorseModel({
   headRef,
   legsRef,
+  unicorn = false,
 }: {
+  unicorn?: boolean;
   headRef: RefObject<THREE.Group | null>;
   legsRef: RefObject<THREE.Group | null>;
 }) {
+  const coat = unicorn ? "#f4eee7" : "#b9855c";
+  const hair = unicorn ? "#c9a6d5" : "#49352e";
+  const hoof = unicorn ? "#cfae74" : "#443c36";
   return (
     <>
       <mesh
@@ -197,19 +202,23 @@ export default function HorseModel({
       <group ref={legsRef}>
         {[-1, 1, -1, 1].map((sign, i) => (
           <group key={i} position={[sign * 0.195, 0.58, i < 2 ? 0.32 : -0.34]}>
-            <Round p={[0, -0.115, 0]} s={[0.078, 0.19, 0.09]} />
-            <Round p={[0, -0.29, 0.008]} s={[0.052, 0.075, 0.06]} />
-            <Round p={[0, -0.39, 0.015]} s={[0.041, 0.14, 0.048]} />
+            <Round c={coat} p={[0, -0.115, 0]} s={[0.078, 0.19, 0.09]} />
+            <Round c={coat} p={[0, -0.29, 0.008]} s={[0.052, 0.075, 0.06]} />
+            <Round c={coat} p={[0, -0.39, 0.015]} s={[0.041, 0.14, 0.048]} />
             <Round p={[0, -0.47, 0.018]} s={[0.044, 0.055, 0.05]} c="#eee0c8" />
             <Round p={[0, -0.525, 0.04]} s={[0.067, 0.055, 0.085]} c={hoof} />
           </group>
         ))}
       </group>
       <group ref={headRef} position={[0, 1.215, 0.52]}>
+        {unicorn && <mesh position={[0, 0.28, 0.15]} rotation={[0.25, 0, 0]} castShadow>
+          <coneGeometry args={[0.055, 0.42, 16]} />
+          <meshStandardMaterial color="#eed29a" metalness={0.25} roughness={0.4} />
+        </mesh>}
         <group rotation={[-0.42, 0, 0]}>
-          <Round p={[0, 0, 0.035]} s={[0.145, 0.17, 0.21]} />
-          <Round p={[0, -0.035, 0.205]} s={[0.115, 0.12, 0.235]} />
-          <Round p={[0, -0.065, 0.37]} s={[0.12, 0.085, 0.1]} c="#d5ad89" />
+          <Round c={coat} p={[0, 0, 0.035]} s={[0.145, 0.17, 0.21]} />
+          <Round c={coat} p={[0, -0.035, 0.205]} s={[0.115, 0.12, 0.235]} />
+          <Round p={[0, -0.065, 0.37]} s={[0.12, 0.085, 0.1]} c={unicorn ? "#e3c7d2" : "#d5ad89"} />
           <Round
             p={[0, 0.05, 0.205]}
             s={[0.032, 0.022, 0.15]}
@@ -218,7 +227,7 @@ export default function HorseModel({
           />
           {[-1, 1].map((sign) => (
             <group key={sign}>
-              <Round
+              <Round c={coat}
                 p={[sign * 0.115, 0.235, -0.035]}
                 s={[0.05, 0.135, 0.065]}
                 rotation={[0.12, 0, -sign * 0.2]}

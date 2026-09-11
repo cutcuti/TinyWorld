@@ -182,7 +182,7 @@ export default function App() {
       last = now;
       setWorld((w) => advance(w, dt));
       if (now > rainEnd.current) setRain(null);
-      if (now > rainEnd.current + 8000) setRainbow(false);
+      setRainbow(rainEnd.current > 0 && now > rainEnd.current && now < rainEnd.current + 8000);
     }, 100);
     return () => clearInterval(id);
   }, []);
@@ -233,6 +233,7 @@ export default function App() {
     setWorld(next);
     setTool(mode === "free" ? "plant" : "explore");
     setRain(null);
+    rainEnd.current = 0;
     setRainbow(false);
     setNotice(
       mode === "free"
@@ -290,7 +291,7 @@ export default function App() {
       setWorld((w) => waterAt(w, x, z));
       setRain([x, z]);
       rainEnd.current = performance.now() + 2600;
-      setRainbow(true);
+      setRainbow(false);
       setHint(false);
     }
   }
@@ -675,6 +676,7 @@ export default function App() {
               setWorld(fresh);
               current.current = fresh;
               setRain(null);
+              rainEnd.current = 0;
               setRainbow(false);
               setReset(false);
               setNotice("A fresh world, full of possibility.");

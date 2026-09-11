@@ -611,7 +611,7 @@ function Content(props: Props) {
         <Visitors world={world} key={world.mode} />
         <SpringVisitors world={world} />
         <SeasonParticles season={world.season} reduced={world.reduced} />
-        <Rainbow show={rainbow && world.season !== 3} />
+        <Rainbow show={rainbow && world.season !== 3} reduced={world.reduced} />
         {world.plants.map((p) =>
           p.kind === "tree" ? (
             <Tree

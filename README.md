@@ -39,7 +39,7 @@ The garden has three chickens, two cows, two goats, two sheep, one horse, two do
 
 ## Gardening and seasons
 
-**Plant** offers Trees, Flowers, Lilies, and Lotus. Click open grass for land plants or the pond for lotus. Water, edges and occupied spots reject unsuitable planting. **Rain** waters nearby plants and brings a brief rainbow. Plants reach maturity in roughly 83 seconds; watering accelerates growth for eight seconds within 1.35 world units. Mature flower patches attract butterflies.
+**Plant** offers Trees, Flowers, Lilies, and Lotus. Click open grass for land plants or the pond for lotus. Water, edges and occupied spots reject unsuitable planting. **Rain** waters nearby plants and brings a brief rainbow after the shower ends. A white unicorn with a lavender mane and golden horn walks across its top, then disappears with it. Less motion keeps the unicorn at the crest. Plants reach maturity in roughly 83 seconds; watering accelerates growth for eight seconds within 1.35 world units. Mature flower patches attract butterflies.
 
 The season button advances only in order: **Spring → Summer → Autumn → Winter → Spring**. Blossom colors and fresh grass give way to summer greens, autumn foliage and fallen leaves, then snowy trees, ground and falling snow. The pond remains open for ducks. Season choice is saved.
 

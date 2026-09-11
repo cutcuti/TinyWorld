@@ -1,3 +1,4 @@
+import RainbowUnicorn from "./RainbowUnicorn";
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
@@ -167,17 +168,16 @@ export function SeasonParticles({
     </instancedMesh>
   );
 }
-export function Rainbow({ show }: { show: boolean }) {
+export function Rainbow({ show, reduced }: { show: boolean; reduced: boolean }) {
   if (!show) return null;
   return (
     <group
       position={[0, 0.35, 0]}
       rotation={[0, -0.35, 0]}
-      scale={[1, 0.78, 1]}
     >
       {["#d98d91", "#e5ae77", "#ecda8a", "#98bd95", "#83b9ca", "#a59aca"].map(
         (color, i) => (
-          <mesh key={color}>
+          <mesh key={color} scale={[1, 0.78, 1]}>
             <torusGeometry
               args={[ISLAND_RADIUS - 0.12 - i * 0.18, 0.1, 12, 96, Math.PI]}
             />
@@ -191,6 +191,7 @@ export function Rainbow({ show }: { show: boolean }) {
           </mesh>
         ),
       )}
+      <RainbowUnicorn reduced={reduced} />
     </group>
   );
 }
