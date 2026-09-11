@@ -47,6 +47,8 @@ Spring also brings six pastel Easter eggs and two little rabbit visitors to the 
 
 Winter brings a small scarf-wearing reindeer, a snow-capped Christmas tree, warm evening lights, and two wrapped presents to the original garden. The reindeer visits during daylight and wanders gently; Less motion holds it still. These seasonal decorations do not populate Free world.
 
+Autumn brings two bushy-tailed squirrels and a few scattered acorns to the original garden. They take short strolls, pause to nibble, and retreat at bedtime. Less motion keeps them still; Free world remains yours to populate.
+
 The time slider controls daylight. Pause holds the clock while plants and creature behavior continue. A full day lasts roughly six minutes.
 
 ## Cloud bedrooms
